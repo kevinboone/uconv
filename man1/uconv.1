@@ -1,0 +1,370 @@
+.\" Copyright (C) 2013 Kevin Boone 
+.\" Permission is granted to any individual or institution to use, copy, or
+.\" redistribute this software so long as all of the original files are
+.\" included, and that this copyright notice
+.\" is retained.
+.\"
+.TH uconv 1 "March 2013"
+.SH NAME
+uconv \- a general-purpose unit converter 
+.SH SYNOPSIS
+.B uconv 
+.RB [options]\ {value}\ {from_units}\ {to_units} 
+.PP
+
+.SH DESCRIPTION
+\fIuconv\fR is 
+a general-purpose unit converter for use on the 
+command line. There are many (perhaps too many) unit converter programs available; 
+most have graphical interfaces. \fIuconv\fR is intended to be sufficiently
+flexible in its unit specification that it is faster and easier to
+use on the command line than a graphical program. 
+\fIuconv\fR is primarily intended for domestic and general scientific use --
+it doesn't include the large numbers of specialized units that are used in
+particular disciplines.  
+
+\fIuconv\fR recognizes a hundred or so basic units, and these can be used
+in combination to form compound units (metres/second, newton.metres, etc.) 
+In fact, \fIuconv\fR will convert between any pair of units that are
+dimensionally consistent. For example, you can convert joules per second per
+kilogram to calories per minute per pound, if you wish. The program won't
+attempt to convert, for example, minutes to metres -- these are not
+dimensionally consistent. 
+
+Units that are complementary to one another are assumed to be dimensionally
+consistent, and \fIuconv\fR will invert the result according. So, for example,
+it can convert miles/gallon to litres/km, even though these units are
+complementary, rather than equivalent. 
+
+.SH OVERVIEW OF OPERATION
+
+The basic command is:
+
+.nf
+uconv {value} {from_units} {to_units}
+.fi
+
+For example, to convert 6 feet to centimetres:
+
+.nf
+uconv 6 ft cm
+.fi
+
+However, because \fIuconv\fR recognizes a large number of synonyms for 
+unit names, the follow all produce the same result:
+
+.nf
+uconv 6 foot cm
+uconv 6 feet centimetres
+uconv 6 ft centimeter
+.fi
+
+Units can be compounded, provided that they can be reduced to the same
+base units. For example, to convert 60 miles per hour to metres per second:
+
+
+.nf
+uconv 60 miles/hour m/sec
+.fi
+
+Again, the following all produce the same result:
+
+.nf
+uconv 60 mph metre/sec
+uconv 60 mile.hour^-1 m/s 
+uconv 60 miles.hr-1 m.second-1
+.fi
+
+Note that '^-1' is the conventional way of writing powers in programming
+languages. This can be shortened just to '-1' in \fIuconv\fR for
+convenience. Similarly, square meters can be written:
+
+.nf
+sqm
+m^2
+m2
+"square meters"
+.fi
+
+The quotes around the last example are necessary to prevent the shell recognizing
+the space as an argument separator.
+
+
+.SH UNIT FORMAT
+
+A unit is made from one or more unit elements separated by '.' or '/'; for
+example:
+
+.nf
+N.m
+J/sec
+.fi
+
+In books it's quite common to see newton-metres written 'nM'; \fIuconv\fR does
+not recognize this notation, because it makes it too easy to confuse
+single units with collections of units. For example, is 'msec' metre.seconds or
+milliseconds? Because of this ambiguity, \fIuconv\fR insists on a separator
+between unit elements. 
+
+
+The general format of a unit element is:
+
+.nf
+[dimension_name][prefix]{name}[[^]{[-]{dimension_number}]}
+.fi
+
+.SS Dimensions
+
+The dimensions of the unit are its exponent, or a prefix indicating
+the exponent, but not both. For example, cubic centimetres can be written
+
+.nf
+cucm
+"cu cm"
+"cubic cm"
+cm2
+cm^-2
+.fi
+
+Similar the second power can be represented with '^2' or '2' after the name,
+or 'square' or 'sq' before it. Higher powers can be entered using numbers, but
+there are no names for these.
+
+.SS Prefixes
+
+Unit names can be preceded by SI prefixes: tera(T) giga(G), mega(M),
+kilo(k), deci(d), centi(c), milli(m), micro(u), nano(n), pico(p).
+Prefixes are case-sensitive. 
+
+.SS Names
+
+All units can be entered with a variety of names and abbreviations. In general,  
+\fIuconv\fR name match is case insensitive even where the conventional name 
+is upper-case or mixed case (e.g., mmHg for millimetres of mercury). This is
+simply to reduce the number of keypresses needed to get to the result.
+
+Plural forms (feet, rather than feet) are always recognized even when
+it would be grammatically dubious ('1 feet', '2 foot').
+
+Some unit names have spaces (e.g., nautical miles, troy ounces). \fIuconv\fR 
+provides
+versions of these names with hyphens (nautical-miles, troy-ounces), because the 
+spaces
+tend to confuse the shell. Of course, you can still use the correct names 
+with spaces, but you'll probably have put them in quotation marks.
+
+To see a list of all unit names and synonyms, use \fIuconv -l\fR.
+
+
+.SH OUTPUT FORMAT
+
+\fIuconv\fR displays results to five significant figures, using scientific
+notation where necessary. Where groups of units form sets with a non-decimal
+relationship, the default behaviour is to split the result into
+elements of the set. For example:
+
+.nf
+$ uconv 1000 l gal
+1000 litres = 219 gallons, 7 pints, 12.0638 fluid-ounces
+.fi
+
+This behaviour is used for tons/hundredweight/stones/pounds/ounces, 
+hours/minutes/seconds, and gallons/pints/fluid-ounces. To override
+this formatting style and use only decimal formatting, use the \fI-f\fR
+switch:
+
+.nf
+$ uconv -d 1000 l gal
+1000 litres = 219.969 gallons
+.fi
+
+The output includes the input units, but with full names rather than any 
+abbreviations that might have been used. This is necessary because, with
+such a large number of units available, it's very easy to use the wrong
+abbreviation (entering 'C' for coulomb, when \fIuconv\fR interprets it 
+as Celsius, for example.) Check that the units in the output are what
+you expect, and refer to the list of units if necessary.
+
+
+.SH THINGS TO WATCH OUT FOR
+
+\fIuconv\fR favours traditional spellings of unit names: 'gramme' 
+over 'gram', 'metre' over 'meter'. Of course, both forms are accepted
+as input.
+
+Kilogrammes, pounds, etc., are units of mass, not weight. \fIuconv\fR has
+to make this distinction, because otherwise it's difficult to ensure
+that consistent units are being converted. The distinction is not
+always noticeable: plain 'weights' in 
+kilograms and stones can be freely converted -- you're actually converting
+masses, but the conversion factors are the same. What you can't do is
+convert, for example, torque in newton-metres to pound-feet,
+because a pound is a mass, not a force. 
+The assocated unit of force is pound-force-feet.
+Consequently, we can't do this:
+
+.nf
+uconv 1 lb.foot N.m
+.fi
+
+But we can do this:
+
+.nf
+uconv 1 lbf.foot N.m
+.fi
+
+Because 'lbf' is the abbreviation for pounds-force.
+
+If an argument to \fIuconv\fR will match a unit name alone, or a unit with a prefix,
+then the unit name is preferred. So, for example, 'min' is 
+interpreted as 'minute', and not 'milli-inch'. This is usually the right
+thing to do. If \fIuconv\fR matches wrongly in this respect, give the
+prefix name in full ('milliinch').
+
+Sometimes the same name is used for different units. There isn't much that
+\fIuconv\fR can do about this. For example, the unit 'cord' is used as a unit
+of area (mostly in the UK), and of volume (most in North America). The
+same is true for abbreviations -- 'C' is used for both coulombs and Celsius. 
+There's no
+way to get around this problem other than providing different name or abbreviation
+variants in
+the program. Refer to the list of unit names to see which is appropriate.
+
+\fIuconv\fR favours English/international units over
+US variants. For example, a US pint is slightly smaller than a UK pint
+(but there are still eight pints to the gallon in both regions). \fIuconv\fR
+uses the prefix 'us' to indicate US variants, e.g., 'usping', 'usgallon', 'uston'. 
+
+Although it's not very mathematically sound, \fIuconv\fR recognizes 'kilo'
+as an abbreviation for 'kilogramme'. Of course, 'kilo' is really a prefix;
+none of the other prefixes (mega, centi, etc) are interpreted in thhis
+loose way. 'kilo' is handled differently because its use as a measure of
+mass is so common.
+
+.SH NOTES ON SPECIFIC UNITS
+
+\fIuconv\fR uses the name 'calorie' (or 'cal') in the scientific sense:
+the amount of energy that will raise the temperature of
+one gramme of water by one degree Celsius. The 'calorie' that is used
+in food labels and diet books is typically a thousand times 
+bigger than this -- strictly
+it's a kilocalorie. Food labelling is getting better in the UK, but it's still
+quite common to use the term 'calorie' to mean a kilocalorie. 
+
+Units of temperature (Fahrenheit, Celsius, Kelvin) do not convert by
+simple multiplication, and therefore can't readily be converted except
+to other simple of units of temperature.
+
+The units of radiation dose -- gray, rad, sievert, and REM -- can be
+freely converted using \fIuconv\fR because they have the same dimensions.
+However, in practice they are not convertible, except where the radiation
+is photonic.
+
+Radians cannot be abbreviated to 'rad' or 'rads', as these names are
+used by the unit of radiation dose, the rad.
+
+The steradian is a dimensionless unit of solid angle, which cannot be 
+converted to anything else. It exists in \fIuconv\fR solely to prevent units
+of illuminance being converted to units of luminance. Luminance is defined
+in terms of luminous intensity, while illuminance is defined in terms of
+luminious flux. These units are generally not convertible.
+
+The units 'footcandle' and 'footlambert' are common, but misleading, names
+for lumens/sq foot and candela/sq foot respectively. These units cannot
+be entered as 'foot.candela' or 'foot.lambert' -- these are valid, but completely
+different -- units.
+
+\fIuconv\fR takes the units 'candela' and 'candlepower' to be equivalent.
+Candlepower has been expressed in different ways in the past, but for the
+last fifty years or so it's been taken to be equivalent to the candela
+in most disciplines. 
+
+The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
+(imperial) gallon. For US gallons, use 'miles/usgallon'.
+ 
+
+.SH "OPTIONS"
+.TP
+.BI -h
+Show brief usage information 
+.LP
+.TP
+.BI -l
+Print a list of known unit names and synonyms
+.LP
+.TP
+.BI -v
+Show version number and exit
+.LP
+
+.SH EXAMPLES
+
+.nf
+$ uconv 100 mph kmh
+100 mph = 160.934 kmh
+
+$ uconv 10 l/s gal/h
+10 litre/second = 7918.89 gallon/hour
+
+$ uconv 8 cuft l
+8 foot^3 = 226.535 litre
+
+$ uconv -270 c k
+-270 celsius = 3.15 kelvin
+
+$ uconv 5000 sqm acre
+5000 metre^2 = 1.23553 acre
+
+$ uconv 1 btu W.s
+1 BTU = 1054.5 watt.second
+
+$ uconv 3705 sec hr
+3705 seconds = 1 hour, 1 minute, 9 seconds
+
+$ ./uconv 104 kilos st
+104 kilos = 16 stones, 5 pounds, 4.49204 ounces
+.fi 
+
+
+.SH BUGS AND LIMITATIONS
+
+\fIuconv\fR is strongly biased to US/UK usage, and particularly UK. It recognizes
+and displays only English names, and would not be easy to extend to other
+languages.
+
+Although \fIuconv\fR can output imperial measures in not-decimal sets
+(pounds and ounces, etc), it cannot read data in this format. Input
+values have to be decimal.
+
+\fIuconv\fR tries to be correct in its grammar, that is, to output
+values like "1 foot, 2 inches" rather than "1 feet, 2 inches". However,
+when a value comes from a computation, it may be inexact. So, for example,
+if the result is 1.0000001 feet, it will likely be displayed as
+"1 feet", because 1.0000001 is not exactly 1. Problems like this are
+tricky to fix without re-implementing the entire math library to work
+in decimal.
+
+Some relatively common units (e.g., barrels) are not included because 
+there are too many
+variants to be sure of getting the right value.
+
+On the whole, \fIuconv\fR includes units only if they are in current use, and
+avoids those of mostly historical significance (chain, ell, league). These units
+could easily be included, but doing so increases the risk of the user entering
+a partial name or abbreviation that matches something completely unexpected. 
+
+\fIuconv\fR does not recognize 'per' as a compound unit separator. That is,
+you can say 'km/hr', but not 'km per hour'.  
+ 
+
+
+.SH AUTHOR AND LEGAL
+\fIuconv\fR
+is maintained by Kevin Boone, and is open source under the
+terms of the GNU Public Licence, version 2.0. There is no warranty
+of any kind.
+
+
+
+
+.\" end of file
