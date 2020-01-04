@@ -74,5 +74,5 @@ by <code>make install</code>.
 
 <h2>Further information</h2>
 
-See the <a href="uconv.man.html">uconv man page</a>.
+See the [uconv man page](uconv.man.html).
 

@@ -28,15 +28,5 @@ install: all
 	cp -p man1/uconv.1 $(DESTDIR)/$(MANDIR)
 	cp -p uconv $(DESTDIR)/$(BINDIR)
 
-srcdist: clean
-	(cd ..; tar cvfz /tmp/$(APPNAME)-$(VERSION).tar.gz uconv-0.0.1)
-
-web: srcdist
-	./makeman.pl > uconv.man.html
-	cp /tmp/$(APPNAME)-$(VERSION).tar.gz /home/kevin/docs/kzone5/target/
-	cp uconv.man.html /home/kevin/docs/kzone5/target/
-	cp README_uconv.html /home/kevin/docs/kzone5/source
-	(cd /home/kevin/docs/kzone5; ./make.pl README_uconv)
-
-
-
+doc:
+	perl makeman.pl > uconv.man.html
