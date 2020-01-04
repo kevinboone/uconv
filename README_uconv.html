@@ -1,8 +1,3 @@
-<a href="software.html">&bull; Software</a>
-<a href="utility_corner.html">&bull; Utility corner</a>
-
-<p>
-
 <h1>uconv -- a general unit converter for the command line</h1> 
 
 Version 0.0.1, March 2013 
