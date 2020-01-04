@@ -51,9 +51,7 @@ prefixes -- kilo, micro, etc -- are recognized, both in full and as
 abbreviations.
 <p/>
 <code>uconv</code> is written in ANSI-standard C, and will compile on more-or-less
-any platform. Binaries are available on this site for Windows (Cygwin and native
-console),
-Android using <a href="kbox2.html">KBOX</a>, and Fedora 14 Linux or similar.
+any platform with a C compiler.
 <p/>
 Although there are many unit conversion applications around, I wrote
 <code>uconv</code> because I needed something that would work on the command line,
@@ -71,26 +69,10 @@ converter with the same name.
 
 To build from source, in general, unpack the source bundle and 
 run <code>make</code>, followed
-by <code>make install</code>. To install a binary, just download the appropriate 
-file from the list below, and copy it to 
-any directory on the $PATH -- <code>/usr/bin</code> is appropriate for Cygwin
-or Linux, <code>c:\windows</code> is suitable on Windows. Rename the file
-to 'uconv' or 'unconv.exe' if required. Building from 
-source -- if practicable -- may be better even when there is a binary available,
-as this will also install the <code>man</code> page. In addition, the 
-source might also be
-more up-to-date than the binaries.
+by <code>make install</code>. 
 
 
 <h2>Further information</h2>
 
 See the <a href="uconv.man.html">uconv man page</a>.
 
-<h2>Downloads</h2>
-<ul>
-<li><a href="uconv-0.0.1.tar.gz">Source code bundle</a></li>
-<li><a href="uconv_cygwin.exe">Cygwin binary for Windows/Cygwin</a></li>
-<li><a href="uconv_native.exe">Binary for Windows console ('DOS box')</a></li>
-<li><a href="uconv_fc14">Binary for Fedora 14 Linux or similar</a></li>
-<li><a href="uconv_0.0.1_kbox.deb">Installer package for KBOX on Android</a></li>
-</ul>
