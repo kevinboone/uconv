@@ -1361,7 +1361,7 @@ char *units_format_minutes (double minutes)
     }
     
   double whole_minutes = floor (minutes);
-  double seconds = (minutes - whole_minutes) * 12.0;
+  double seconds = (minutes - whole_minutes) * 60.0;
 
   if (seconds != 0.00)
     {
