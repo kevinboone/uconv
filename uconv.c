@@ -1,7 +1,7 @@
 /*============================================================================
   uconv.c
 
-  (c)2013-2017 Kevin Boone
+  (c)2013-2021 Kevin Boone
   Distributed under the terms of the GNU Public Licence, version 2
 ============================================================================*/
 
@@ -19,8 +19,8 @@
 void show_version (void)
   {
   printf ("%s version %s\n", NAME, VERSION);
-  printf ("Copyright (c)2013 Kevin Boone\n");
-  printf ("Freely distrbutable under the terms of the GNU Public Licence");
+  printf ("Copyright (c)2013-2021 Kevin Boone\n");
+  printf ("Freely distrbutable under the terms of the GNU Public Licence, v3.0");
   printf ("\n");
   }
 

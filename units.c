@@ -630,7 +630,7 @@ void unit_parse_single_unit (const char *s, Unit *unit, int *power, int *pref_po
     *unit = units_find_unit_by_name_and_prefix (sunit, pref_power, TRUE);
     if ((int)(*unit) <= 0)
       {
-      char msg[100];
+      char msg[140];
       snprintf (msg, sizeof (msg), "Unknown unit name: '%s'", sunit);
       *error = strdup (msg); 
       }
@@ -826,7 +826,7 @@ void units_dump (const Units *self)
   for (i = 0; i < l; i++)
     {
     char *s = units_format_single_unit (&self->units[i]); 
-    printf (s);
+    printf ("%s", s);
     free (s);
     if (i != l - 1) printf (".");
     }

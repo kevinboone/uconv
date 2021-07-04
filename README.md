@@ -1,6 +1,6 @@
 <h1>uconv -- a general unit converter for the command line</h1> 
 
-Version 0.0.1, March 2013 
+Version 0.0.2, July 2021 
 
 <h2>What is this?</h2>
 
