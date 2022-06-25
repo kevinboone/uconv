@@ -19,7 +19,7 @@
 void show_version (void)
   {
   printf ("%s version %s\n", NAME, VERSION);
-  printf ("Copyright (c)2013-2021 Kevin Boone\n");
+  printf ("Copyright (c)2013-2022 Kevin Boone\n");
   printf ("Freely distrbutable under the terms of the GNU Public Licence, v3.0");
   printf ("\n");
   }
@@ -87,7 +87,6 @@ int main (int argc, char **argv)
     else
       break;
     }
-        //fprintf (stderr, "'%s -h' for help\n", argv[0]); 
 
   if (usage)
     {

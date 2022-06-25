@@ -25,7 +25,7 @@ sub dofile($)
   
   }
 
-printf "<p/>\n<h1>uconv v0.0.1 command reference</h1>\n";
+printf "<p/>\n<h1>uconv v0.0.3 command reference</h1>\n";
 
 dofile ("man1/uconv.1");
 

@@ -510,8 +510,8 @@ Unit units_find_unit_by_name_and_prefix (const char *name, int *pref_pow,
   (Note -- we have to make special provision for unit names beginning with
   'cu' and 'sq', as these strings are also prefixes for 'cubic' and 'square')
 ============================================================================*/
-void unit_parse_single_unit (const char *s, Unit *unit, int *power, int *pref_power,
-    char **error)
+void unit_parse_single_unit (const char *s, Unit *unit, int *power, 
+    int *pref_power, char **error)
   {
   int i, ii = 0, l = strlen (s);
   char *ss = malloc (l + 1);
@@ -576,7 +576,7 @@ void unit_parse_single_unit (const char *s, Unit *unit, int *power, int *pref_po
 
   if (skip != 0)
     {
-    strncpy (temp, ss, sizeof (temp));
+    strncpy (temp, ss, sizeof (temp) - 1);
     strcpy (ss, temp + skip);
     }
 
@@ -603,7 +603,7 @@ void unit_parse_single_unit (const char *s, Unit *unit, int *power, int *pref_po
     {
     if (ab_power == 0)
       {
-      strncpy (spower, ss + p, sizeof (spower));
+      strncpy (spower, ss + p, sizeof (spower) - 1);
       ss[p] = 0;
       strncpy (sunit, ss, sizeof (sunit) - 1);
       }

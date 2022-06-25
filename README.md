@@ -1,6 +1,6 @@
 <h1>uconv -- a general unit converter for the command line</h1> 
 
-Version 0.0.2, July 2021 
+Version 0.0.3, June 2022 
 
 <h2>What is this?</h2>
 
@@ -27,7 +27,15 @@ $ uconv 60 cuft m3
 60 cubic feet = 1.69901 cubic metres
 </pre>
 
-<code>uconv</code> recognizes a hundred or so basic units, but the pontential
+A more complex example:
+
+<pre class="codeblock">
+$ ./uconv 200 m/sec2/g ft/min2/lb
+200 metres/square second/gramme = 1.07148E+09 feet/square minute/pound
+</pre>
+
+
+<code>uconv</code> recognizes a hundred or so basic units, but the potential
 conversions are very much more extensive than this, as units can be combined.
 The program recognizes combined units in a variety of formats:
 m/sec, m/sec^2, m/sec2, m/sec/sec, etc. 

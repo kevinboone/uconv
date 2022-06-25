@@ -1,198 +1,226 @@
-.\" Copyright (C) 2013-2022 Kevin Boone 
-.\" Permission is granted to any individual or institution to use, copy, or
-.\" redistribute this software so long as all of the original files are
-.\" included, and that this copyright notice
-.\" is retained.
-.\"
-.TH uconv 1 "March 2013"
-.SH NAME
-uconv \- a general-purpose unit converter 
-.SH SYNOPSIS
-.B uconv 
-.RB [options]\ {value}\ {from_units}\ {to_units} 
-.PP
+<p/>
+<h1>uconv v0.0.3 command reference</h1>
+<h2/>
 
-.SH DESCRIPTION
-\fIuconv\fR is 
+uconv - a general-purpose unit converter 
+</h2/><p/>
+<h3/>SYNOPSIS</h3/>
+
+<B>uconv </B>
+
+[options]&nbsp;{value}&nbsp;{from_units}&nbsp;{to_units}
+
+<P>
+
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<h3/>DESCRIPTION</h3/>
+
+<I>uconv</I> is 
 a general-purpose unit converter for use on the 
 command line. There are many (perhaps too many) unit converter programs available; 
-most have graphical interfaces. \fIuconv\fR is intended to be sufficiently
+most have graphical interfaces. <I>uconv</I> is intended to be sufficiently
 flexible in its unit specification that it is faster and easier to
 use on the command line than a graphical program. 
-\fIuconv\fR is primarily intended for domestic and general scientific use --
+<I>uconv</I> is primarily intended for domestic and general scientific use --
 it doesn't include the large numbers of specialized units that are used in
 particular disciplines.  
-
-\fIuconv\fR recognizes a hundred or so basic units, and these can be used
+<P>
+<I>uconv</I> recognizes a hundred or so basic units, and these can be used
 in combination to form compound units (metres/second, newton.metres, etc.) 
-In fact, \fIuconv\fR will convert between any pair of units that are
+In fact, <I>uconv</I> will convert between any pair of units that are
 dimensionally consistent. For example, you can convert joules per second per
 kilogram to calories per minute per pound, if you wish. The program won't
 attempt to convert, for example, minutes to metres -- these are not
 dimensionally consistent. 
-
+<P>
 Units that are complementary to one another are assumed to be dimensionally
-consistent, and \fIuconv\fR will invert the result according. So, for example,
+consistent, and <I>uconv</I> will invert the result according. So, for example,
 it can convert miles/gallon to litres/km, even though these units are
 complementary, rather than equivalent. 
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<h3/>OVERVIEW OF OPERATION</h3/>
 
-.SH OVERVIEW OF OPERATION
-
+<P>
 The basic command is:
-
-.nf
+<P>
+<PRE>
 uconv {value} {from_units} {to_units}
-.fi
+</PRE>
 
+<P>
 For example, to convert 6 feet to centimetres:
-
-.nf
+<P>
+<PRE>
 uconv 6 ft cm
-.fi
+</PRE>
 
-However, because \fIuconv\fR recognizes a large number of synonyms for 
+<P>
+However, because <I>uconv</I> recognizes a large number of synonyms for 
 unit names, the follow all produce the same result:
-
-.nf
+<P>
+<PRE>
 uconv 6 foot cm
 uconv 6 feet centimetres
 uconv 6 ft centimeter
-.fi
+</PRE>
 
+<P>
 Units can be compounded, provided that they can be reduced to the same
 base units. For example, to convert 60 miles per hour to metres per second:
-
-
-.nf
+<P>
+<P>
+<PRE>
 uconv 60 miles/hour m/sec
-.fi
+</PRE>
 
+<P>
 Again, the following all produce the same result:
-
-.nf
+<P>
+<PRE>
 uconv 60 mph metre/sec
 uconv 60 mile.hour^-1 m/s 
 uconv 60 miles.hr-1 m.second-1
-.fi
+</PRE>
 
+<P>
 Note that '^-1' is the conventional way of writing powers in programming
-languages. This can be shortened just to '-1' in \fIuconv\fR for
+languages. This can be shortened just to '-1' in <I>uconv</I> for
 convenience. Similarly, square meters can be written:
-
-.nf
+<P>
+<PRE>
 sqm
 m^2
 m2
-"square meters"
-.fi
+&quot;square meters&quot;
+</PRE>
 
+<P>
 The quotes around the last example are necessary to prevent the shell recognizing
 the space as an argument separator.
+<P>
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<h3/>UNIT FORMAT</h3/>
 
-
-.SH UNIT FORMAT
-
+<P>
 A unit is made from one or more unit elements separated by '.' or '/'; for
 example:
-
-.nf
+<P>
+<PRE>
 N.m
 J/sec
-.fi
+</PRE>
 
-In books it's quite common to see newton-metres written 'nM'; \fIuconv\fR does
+<P>
+In books it's quite common to see newton-metres written 'nM'; <I>uconv</I> does
 not recognize this notation, because it makes it too easy to confuse
 single units with collections of units. For example, is 'msec' metre.seconds or
-milliseconds? Because of this ambiguity, \fIuconv\fR insists on a separator
+milliseconds? Because of this ambiguity, <I>uconv</I> insists on a separator
 between unit elements. 
-
-
+<P>
+<P>
 The general format of a unit element is:
-
-.nf
+<P>
+<PRE>
 [dimension_name][prefix]{name}[[^]{[-]{dimension_number}]}
-.fi
+</PRE>
 
-.SS Dimensions
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H3>Dimensions</H3>
 
+<P>
 The dimensions of the unit are its exponent, or a prefix indicating
 the exponent, but not both. For example, cubic centimetres can be written
-
-.nf
+<P>
+<PRE>
 cucm
-"cu cm"
-"cubic cm"
+&quot;cu cm&quot;
+&quot;cubic cm&quot;
 cm3
 cm^-3
-.fi
+</PRE>
 
+<P>
 Similar the second power can be represented with '^2' or '2' after the name,
 or 'square' or 'sq' before it. Higher powers can be entered using numbers, but
 there are no names for these.
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H3>Prefixes</H3>
 
-.SS Prefixes
-
+<P>
 Unit names can be preceded by SI prefixes: tera(T) giga(G), mega(M),
-kilo(k), deci(d), centi(c), milli(m), micro(u), nano(n), pico(p).
+kilo(k), deci(d), centi(c), milli(m), micro(u), <A HREF="/man/man2html?n+nano">nano</A>(n), pico(p).
 Prefixes are case-sensitive. 
+<P>
+<A NAME="lbAI">&nbsp;</A>
+<H3>Names</H3>
 
-.SS Names
-
+<P>
 All units can be entered with a variety of names and abbreviations. In general,  
-\fIuconv\fR name match is case insensitive even where the conventional name 
+<I>uconv</I> name match is case insensitive even where the conventional name 
 is upper-case or mixed case (e.g., mmHg for millimetres of mercury). This is
 simply to reduce the number of keypresses needed to get to the result.
-
+<P>
 Plural forms (feet, rather than feet) are always recognized even when
 it would be grammatically dubious ('1 feet', '2 foot').
-
-Some unit names have spaces (e.g., nautical miles, troy ounces). \fIuconv\fR 
+<P>
+Some unit names have spaces (e.g., nautical miles, troy ounces). <I>uconv</I> 
 provides
 versions of these names with hyphens (nautical-miles, troy-ounces), because the 
 spaces
 tend to confuse the shell. Of course, you can still use the correct names 
 with spaces, but you'll probably have put them in quotation marks.
+<P>
+To see a list of all unit names and synonyms, use <I>uconv -l</I>.
+<P>
+<P>
+<A NAME="lbAJ">&nbsp;</A>
+<h3/>OUTPUT FORMAT</h3/>
 
-To see a list of all unit names and synonyms, use \fIuconv -l\fR.
-
-
-.SH OUTPUT FORMAT
-
-\fIuconv\fR displays results to five significant figures, using scientific
+<P>
+<I>uconv</I> displays results to five significant figures, using scientific
 notation where necessary. Where groups of units form sets with a non-decimal
 relationship, the default behaviour is to split the result into
 elements of the set. For example:
-
-.nf
+<P>
+<PRE>
 $ uconv 1000 l gal
 1000 litres = 219 gallons, 7 pints, 12.0638 fluid-ounces
-.fi
+</PRE>
 
+<P>
 This behaviour is used for tons/hundredweight/stones/pounds/ounces, 
 hours/minutes/seconds, and gallons/pints/fluid-ounces. To override
-this formatting style and use only decimal formatting, use the \fI-f\fR
+this formatting style and use only decimal formatting, use the <I>-f</I>
 switch:
-
-.nf
+<P>
+<PRE>
 $ uconv -d 1000 l gal
 1000 litres = 219.969 gallons
-.fi
+</PRE>
 
+<P>
 The output includes the input units, but with full names rather than any 
 abbreviations that might have been used. This is necessary because, with
 such a large number of units available, it's very easy to use the wrong
-abbreviation (entering 'C' for coulomb, when \fIuconv\fR interprets it 
+abbreviation (entering 'C' for coulomb, when <I>uconv</I> interprets it 
 as Celsius, for example.) Check that the units in the output are what
 you expect, and refer to the list of units if necessary.
+<P>
+<P>
+<A NAME="lbAK">&nbsp;</A>
+<h3/>THINGS TO WATCH OUT FOR</h3/>
 
-
-.SH THINGS TO WATCH OUT FOR
-
-\fIuconv\fR favours traditional spellings of unit names: 'gramme' 
+<P>
+<I>uconv</I> favours traditional spellings of unit names: 'gramme' 
 over 'gram', 'metre' over 'meter'. Of course, both forms are accepted
 as input.
-
-Kilogrammes, pounds, etc., are units of mass, not weight. \fIuconv\fR has
+<P>
+Kilogrammes, pounds, etc., are units of mass, not weight. <I>uconv</I> has
 to make this distinction, because otherwise it's difficult to ensure
 that consistent units are being converted. The distinction is not
 always noticeable: plain 'weights' in 
@@ -202,104 +230,124 @@ convert, for example, torque in newton-metres to pound-feet,
 because a pound is a mass, not a force. 
 The assocated unit of force is pound-force-feet.
 Consequently, we can't do this:
-
-.nf
+<P>
+<PRE>
 uconv 1 lb.foot N.m
-.fi
+</PRE>
 
+<P>
 But we can do this:
-
-.nf
+<P>
+<PRE>
 uconv 1 lbf.foot N.m
-.fi
+</PRE>
 
+<P>
 Because 'lbf' is the abbreviation for pounds-force.
-
-If an argument to \fIuconv\fR will match a unit name alone, or a unit with a prefix,
+<P>
+If an argument to <I>uconv</I> will match a unit name alone, or a unit with a prefix,
 then the unit name is preferred. So, for example, 'min' is 
 interpreted as 'minute', and not 'milli-inch'. This is usually the right
-thing to do. If \fIuconv\fR matches wrongly in this respect, give the
+thing to do. If <I>uconv</I> matches wrongly in this respect, give the
 prefix name in full ('milliinch').
-
+<P>
 Sometimes the same name is used for different units. There isn't much that
-\fIuconv\fR can do about this. For example, the unit 'cord' is used as a unit
+<I>uconv</I> can do about this. For example, the unit 'cord' is used as a unit
 of area (mostly in the UK), and of volume (most in North America). The
 same is true for abbreviations -- 'C' is used for both coulombs and Celsius. 
 There's no
 way to get around this problem other than providing different name or abbreviation
 variants in
 the program. Refer to the list of unit names to see which is appropriate.
-
-\fIuconv\fR favours English/international units over
+<P>
+<I>uconv</I> favours English/international units over
 US variants. For example, a US pint is slightly smaller than a UK pint
-(but there are still eight pints to the gallon in both regions). \fIuconv\fR
+(but there are still eight pints to the gallon in both regions). <I>uconv</I>
 uses the prefix 'us' to indicate US variants, e.g., 'uspint', 'usgallon', 'uston'. 
-
-Although it's not very mathematically sound, \fIuconv\fR recognizes 'kilo'
+<P>
+Although it's not very mathematically sound, <I>uconv</I> recognizes 'kilo'
 as an abbreviation for 'kilogramme'. Of course, 'kilo' is really a prefix;
 none of the other prefixes (mega, centi, etc) are interpreted in thhis
 loose way. 'kilo' is handled differently because its use as a measure of
 mass is so common.
+<P>
+<A NAME="lbAL">&nbsp;</A>
+<h3/>NOTES ON SPECIFIC UNITS</h3/>
 
-.SH NOTES ON SPECIFIC UNITS
-
-\fIuconv\fR uses the name 'calorie' (or 'cal') in the scientific sense:
+<P>
+<I>uconv</I> uses the name 'calorie' (or 'cal') in the scientific sense:
 the amount of energy that will raise the temperature of
 one gramme of water by one degree Celsius. The 'calorie' that is used
 in food labels and diet books is typically a thousand times 
 bigger than this -- strictly
 it's a kilocalorie. Food labelling is getting better in the UK, but it's still
 quite common to use the term 'calorie' to mean a kilocalorie. 
-
+<P>
 Units of temperature (Fahrenheit, Celsius, Kelvin) do not convert by
 simple multiplication, and therefore can't readily be converted except
 to other simple of units of temperature.
-
+<P>
 The units of radiation dose -- gray, rad, sievert, and REM -- can be
-freely converted using \fIuconv\fR because they have the same dimensions.
+freely converted using <I>uconv</I> because they have the same dimensions.
 However, in practice they are not convertible, except where the radiation
 is photonic.
-
+<P>
 Radians cannot be abbreviated to 'rad' or 'rads', as these names are
 used by the unit of radiation dose, the rad.
-
+<P>
 The steradian is a dimensionless unit of solid angle, which cannot be 
-converted to anything else. It exists in \fIuconv\fR solely to prevent units
+converted to anything else. It exists in <I>uconv</I> solely to prevent units
 of illuminance being converted to units of luminance. Luminance is defined
 in terms of luminous intensity, while illuminance is defined in terms of
 luminious flux. These units are generally not convertible.
-
+<P>
 The units 'footcandle' and 'footlambert' are common, but misleading, names
 for lumens/sq foot and candela/sq foot respectively. These units cannot
 be entered as 'foot.candela' or 'foot.lambert' -- these are valid, but completely
 different -- units.
-
-\fIuconv\fR takes the units 'candela' and 'candlepower' to be equivalent.
+<P>
+<I>uconv</I> takes the units 'candela' and 'candlepower' to be equivalent.
 Candlepower has been expressed in different ways in the past, but for the
 last fifty years or so it's been taken to be equivalent to the candela
 in most disciplines. 
-
+<P>
 The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 (imperial) gallon. For US gallons, use 'miles/usgallon'.
- 
+<BR>&nbsp;
+<P>
+<A NAME="lbAM">&nbsp;</A>
+<h3/>OPTIONS</h3/>
 
-.SH "OPTIONS"
-.TP
-.BI -h
+<DL COMPACT>
+<DT><B>-h</B>
+
+<DD>
 Show brief usage information 
-.LP
-.TP
-.BI -l
+</DL>
+<P>
+
+<DL COMPACT>
+<DT><B>-l</B>
+
+<DD>
 Print a list of known unit names and synonyms
-.LP
-.TP
-.BI -v
+</DL>
+<P>
+
+<DL COMPACT>
+<DT><B>-v</B>
+
+<DD>
 Show version number and exit
-.LP
+</DL>
+<P>
 
-.SH EXAMPLES
+<P>
+<A NAME="lbAN">&nbsp;</A>
+<h3/>EXAMPLES</h3/>
 
-.nf
+<P>
+<PRE>
 $ uconv 100 mph kmh
 100 mph = 160.934 kmh
 
@@ -323,48 +371,58 @@ $ uconv 3705 sec hr
 
 $ ./uconv 104 kilos st
 104 kilos = 16 stones, 5 pounds, 4.49204 ounces
-.fi 
+</PRE>
 
+<P>
+<P>
+<A NAME="lbAO">&nbsp;</A>
+<h3/>BUGS AND LIMITATIONS</h3/>
 
-.SH BUGS AND LIMITATIONS
-
-\fIuconv\fR is strongly biased to US/UK usage, and particularly UK. It recognizes
+<P>
+<I>uconv</I> is strongly biased to US/UK usage, and particularly UK. It recognizes
 and displays only English names, and would not be easy to extend to other
 languages.
-
-Although \fIuconv\fR can output imperial measures in not-decimal sets
+<P>
+Although <I>uconv</I> can output imperial measures in not-decimal sets
 (pounds and ounces, etc), it cannot read data in this format. Input
 values have to be decimal.
-
-\fIuconv\fR tries to be correct in its grammar, that is, to output
-values like "1 foot, 2 inches" rather than "1 feet, 2 inches". However,
+<P>
+<I>uconv</I> tries to be correct in its grammar, that is, to output
+values like &quot;1 foot, 2 inches&quot; rather than &quot;1 feet, 2 inches&quot;. However,
 when a value comes from a computation, it may be inexact. So, for example,
 if the result is 1.0000001 feet, it will likely be displayed as
-"1 feet", because 1.0000001 is not exactly 1. Problems like this are
+&quot;1 feet&quot;, because 1.0000001 is not exactly 1. Problems like this are
 tricky to fix without re-implementing the entire math library to work
 in decimal.
-
+<P>
 Some relatively common units (e.g., barrels) are not included because 
 there are too many
 variants to be sure of getting the right value.
-
-On the whole, \fIuconv\fR includes units only if they are in current use, and
+<P>
+On the whole, <I>uconv</I> includes units only if they are in current use, and
 avoids those of mostly historical significance (chain, ell, league). These units
 could easily be included, but doing so increases the risk of the user entering
 a partial name or abbreviation that matches something completely unexpected. 
-
-\fIuconv\fR does not recognize 'per' as a compound unit separator. That is,
+<P>
+<I>uconv</I> does not recognize 'per' as a compound unit separator. That is,
 you can say 'km/hr', but not 'km per hour'.  
- 
+<BR>&nbsp;
+<P>
+<P>
+<A NAME="lbAP">&nbsp;</A>
+<h3/>AUTHOR AND LEGAL</h3/>
 
-
-.SH AUTHOR AND LEGAL
-\fIuconv\fR
+<I>uconv</I>
 is maintained by Kevin Boone, and is open source under the
 terms of the GNU Public Licence, version 2.0. There is no warranty
 of any kind.
+<P>
+<P>
+<P>
+<P>
 
+<P>
 
+<p/>
 
-
-.\" end of file
+<hr/>
