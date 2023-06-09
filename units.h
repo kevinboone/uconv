@@ -33,7 +33,10 @@ typedef enum { meter = 1, second, hectare, foot, acre, usacre, hour, minute, day
    radian, gradian, revolution, hundredweight, ushundredweight, troy_pound,
    troy_ounce, hand, load, therm, ampere, coulomb, faraday, becquerel, curie,
    rutherford, roentgen, gray, rad, sievert, REM, steradian, candela, candlepower,
-   lambert, footlambert, lumen, lux, footcandle, phot, mpg, litreper100km} 
+   lambert, footlambert, lumen, lux, footcandle, phot, mpg, litreper100km, byte,
+   kilobyte, megabyte, gigabyte, terabyte, petabyte, exabyte, kibibyte, mebibyte,
+   gibibyte, tebibyte, pebibyte, exbibyte, bit, kilobit, megabit, gigabit, terabit,
+   petabit, exabit, kibibit, mebibit, gibibit, tebibit, pebibit, exbibit}
   Unit;
 
 typedef struct _UnitAndPower
