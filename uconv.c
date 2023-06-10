@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "units.h" 
 
 
@@ -44,7 +45,7 @@ void show_usage (const char *argv0, FILE *out)
 ============================================================================*/
 int main (int argc, char **argv)
   {
-  int i, optind = 1;
+  int i, expected_arguments = 3, optind = 1;
   BOOL usage = FALSE;
   BOOL list = FALSE;
   BOOL version = FALSE;
@@ -66,6 +67,9 @@ int main (int argc, char **argv)
             {
             switch (argv[i][j])
               {
+              case 'c':
+                expected_arguments = 2;
+                break;
               case 'd':
                 force_decimal =TRUE;
                 break;
@@ -106,59 +110,79 @@ int main (int argc, char **argv)
     exit(0);
     }
 
-  if (argc  - optind != 3)
+  if (argc  - optind != expected_arguments)
     {
-    fprintf (stderr, "%s: Wrong number of arguments\n", argv[0]);
+    fprintf (stderr, "%s: Wrong number of arguments; expected %d\n",
+      argv[0], expected_arguments);
     show_usage (argv[0], stderr);
+    return 1;
+    }
+
+  char *from, *to, *invalid = NULL;
+  double n;
+
+  if (expected_arguments == 3)
+    {
+    from = argv[optind + 1];
+    to = argv[optind + 2];
+    if (sscanf (argv[optind], "%lf", &n) != 1) invalid = argv[optind];
     }
   else
     {
-    double n;
-    if (sscanf (argv[optind], "%lf", &n) == 1)
+    to = argv[optind + 1];
+    errno = 0;
+    n = strtod(argv[optind], &from);
+    if (errno != 0 || from == argv[optind])
       {
-      char *error = NULL;
-      Units *fu = units_parse (argv[optind + 1], &error);
-      if (fu)
-        {
-        Units *tu = units_parse (argv[optind + 2], &error);
-        if (tu)
-          {
-          double res = units_convert (n, fu, tu, &error);
-          if (!error)
-            {
-            char *fs = units_format_string_and_value (fu, n, force_decimal);
-            char *ts = units_format_string_and_value (tu, res, force_decimal);
-            printf ("%s = %s\n", fs, ts);
-            free (fs);
-            free (ts);
-            }
-          else
-            {
-            fprintf (stderr, "Error: %s\n", error);
-            free (error);
-            }
-          units_free (tu);
-          }
-        else
-          {
-          fprintf (stderr, "Error: %s\n", error);
-          free (error);
-          }
+      invalid = argv[optind];
+      if (from != argv[optind]) *from = '\0'; // Don't include units in error.
+      }
+    }
 
-        units_free (fu);
+  if (invalid)
+    {
+    fprintf (stderr, "%s: %s\n", invalid,
+      errno == 0 ? "cannot parse as argument as a number" : strerror(errno));
+    return 1;
+    }
+
+  char *error = NULL;
+  Units *fu = units_parse (from, &error);
+  if (fu)
+    {
+    Units *tu = units_parse (to, &error);
+    if (tu)
+      {
+      double res = units_convert (n, fu, tu, &error);
+      if (!error)
+        {
+        char *fs = units_format_string_and_value (fu, n, force_decimal);
+        char *ts = units_format_string_and_value (tu, res, force_decimal);
+        printf ("%s = %s\n", fs, ts);
+        free (fs);
+        free (ts);
+        return 0;
         }
       else
         {
         fprintf (stderr, "Error: %s\n", error);
         free (error);
         }
+      units_free (tu);
       }
     else
       {
-      fprintf (stderr, "Invalid number: %lf\n", n);
+      fprintf (stderr, "Error: %s\n", error);
+      free (error);
       }
+
+    units_free (fu);
+    }
+  else
+    {
+    fprintf (stderr, "Error: %s\n", error);
+    free (error);
     }
 
-  return 0;
+  return 1;
   }
-

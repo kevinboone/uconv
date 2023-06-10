@@ -10,6 +10,9 @@ uconv \- a general-purpose unit converter
 .SH SYNOPSIS
 .B uconv 
 .RB [options]\ {value}\ {from_units}\ {to_units} 
+
+.B uconv
+.RB [options]\ \-c\ {value}{from_units}\ {to_units}
 .PP
 
 .SH DESCRIPTION
@@ -48,6 +51,12 @@ For example, to convert 6 feet to centimetres:
 
 .nf
 uconv 6 ft cm
+.fi
+
+Or:
+
+.nf
+uconv -c 6ft cm
 .fi
 
 However, because \fIuconv\fR recognizes a large number of synonyms for 
@@ -287,6 +296,9 @@ The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 .TP
 .BI -h
 Show brief usage information 
+.TP
+.BI -c
+Allow the units to be combined with the coefficient as one argument.
 .LP
 .TP
 .BI -l
