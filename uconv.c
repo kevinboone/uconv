@@ -208,18 +208,18 @@ int main (int argc, char **argv)
             int counts[digital_storage_prefix_enum_count] = {0};
 
             for (i = 0; i < fu->n_elements; i++)
-              counts[data_unit_type(fu->units[i].unit)]++;
+              counts[data_unit_type (fu->units[i].unit)]++;
 
             for (i = 0; i < tu->n_elements; i++)
-              counts[data_unit_type(tu->units[i].unit)]++;
+              counts[data_unit_type (tu->units[i].unit)]++;
 
             if (counts[si_prefix] && !counts[iec_prefix])
               {
               for (i = 0; i < fu->n_elements; i++)
-                fu->units[i].unit = si_to_iec(fu->units[i].unit);
+                fu->units[i].unit = si_to_iec (fu->units[i].unit);
 
               for (i = 0; i < tu->n_elements; i++)
-                tu->units[i].unit = si_to_iec(tu->units[i].unit);
+                tu->units[i].unit = si_to_iec (tu->units[i].unit);
               }
             }
 
