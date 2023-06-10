@@ -131,7 +131,7 @@ int main (int argc, char **argv)
     {
     to = argv[optind + 1];
     errno = 0;
-    n = strtod(argv[optind], &from);
+    n = strtod (argv[optind], &from);
     if (errno != 0 || from == argv[optind])
       {
       invalid = argv[optind];
