@@ -8,11 +8,11 @@
 .SH NAME
 uconv \- a general-purpose unit converter 
 .SH SYNOPSIS
+.B uconv
+.RB [options]\ {value}{from_units}\ {to_units}
+
 .B uconv 
 .RB [options]\ {value}\ {from_units}\ {to_units} 
-
-.B uconv
-.RB [options]\ \-c\ {value}{from_units}\ {to_units}
 .PP
 
 .SH DESCRIPTION
@@ -39,6 +39,10 @@ consistent, and \fIuconv\fR will invert the result according. So, for example,
 it can convert miles/gallon to litres/km, even though these units are
 complementary, rather than equivalent. 
 
+Although the examples in this manual are shown using 3 arguments -- one for the
+number, one for its units and the destination units -- the units can also be
+specified in the same argument as the coefficient.
+
 .SH OVERVIEW OF OPERATION
 
 The basic command is:
@@ -47,16 +51,22 @@ The basic command is:
 uconv {value} {from_units} {to_units}
 .fi
 
+Or, for the two argument form:
+
+.nf
+uconv {value}{from_units} {to_units}
+.fi
+
 For example, to convert 6 feet to centimetres:
 
 .nf
 uconv 6 ft cm
 .fi
 
-Or:
+And the equivalent two-argument form:
 
 .nf
-uconv -c 6ft cm
+uconv 6ft cm
 .fi
 
 However, because \fIuconv\fR recognizes a large number of synonyms for 
@@ -296,9 +306,6 @@ The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 .TP
 .BI -h
 Show brief usage information 
-.TP
-.BI -c
-Allow the units to be combined with the coefficient as one argument.
 .LP
 .TP
 .BI -l

@@ -31,10 +31,9 @@ void show_version (void)
 ============================================================================*/
 void show_usage (const char *argv0, FILE *out)
   {
-  fprintf (out, "Usage: %s [options] {number} {from_units} {to_units}\n", argv0);
-  fprintf (out, "       %s [options] -c {number}{from_units} {to_units}\n", argv0);
+  fprintf (out, "Usage: %s [options] {number}{from_units} {to_units}\n", argv0);
+  fprintf (out, "       %s [options] {number} {from_units} {to_units}\n", argv0);
   fprintf (out, "Options:\n");
-  fprintf (out, "  -c                Allow units to be combined with number\n");
   fprintf (out, "  -d                Force decimal output\n");
   fprintf (out, "  -h                Show this message\n");
   fprintf (out, "  -l                List available units\n");
@@ -47,7 +46,7 @@ void show_usage (const char *argv0, FILE *out)
 ============================================================================*/
 int main (int argc, char **argv)
   {
-  int i, expected_arguments = 3, optind = 1;
+  int i, optind = 1;
   BOOL usage = FALSE;
   BOOL list = FALSE;
   BOOL version = FALSE;
@@ -69,9 +68,6 @@ int main (int argc, char **argv)
             {
             switch (argv[i][j])
               {
-              case 'c':
-                expected_arguments = 2;
-                break;
               case 'd':
                 force_decimal =TRUE;
                 break;
@@ -112,39 +108,39 @@ int main (int argc, char **argv)
     exit(0);
     }
 
-  if (argc  - optind != expected_arguments)
-    {
-    fprintf (stderr, "%s: Wrong number of arguments; expected %d\n",
-      argv[0], expected_arguments);
-    show_usage (argv[0], stderr);
-    return 1;
-    }
-
   char *from, *to, *invalid = NULL;
   double n;
 
-  if (expected_arguments == 3)
-    {
-    from = argv[optind + 1];
-    to = argv[optind + 2];
-    if (sscanf (argv[optind], "%lf", &n) != 1) invalid = argv[optind];
-    }
-  else
-    {
-    to = argv[optind + 1];
-    errno = 0;
-    n = strtod (argv[optind], &from);
-    if (errno != 0 || from == argv[optind])
-      {
-      invalid = argv[optind];
-      if (from != argv[optind]) *from = '\0'; // Don't include units in error.
-      }
-    }
+  switch (argc - optind) {
+    case 2:
+      to = argv[optind + 1];
+      errno = 0;
+      n = strtod (argv[optind], &from);
+      if (errno != 0 || from == argv[optind])
+        {
+        invalid = argv[optind];
+        if (from != argv[optind]) *from = '\0'; // Don't include units in error.
+        }
+      break;
+    case 3:
+      from = argv[optind + 1];
+      to = argv[optind + 2];
+      errno = 0;
+      n = strtod (argv[optind], &invalid);
+      // If strtod parsed the entire string, ensure "invalid" is set to NULL.
+      if (errno == 0 && invalid && *invalid == '\0') invalid = NULL;
+      break;
+    default:
+      fprintf (stderr, "%s: Wrong number of arguments; expected 2 or 3\n",
+        argv[0]);
+      show_usage (argv[0], stderr);
+      return 1;
+  }
 
   if (invalid)
     {
     fprintf (stderr, "%s: %s\n", invalid,
-      errno == 0 ? "cannot parse as argument as a number" : strerror(errno));
+      errno == 0 ? "not a valid number" : strerror(errno));
     return 1;
     }
 
