@@ -32,7 +32,9 @@ void show_version (void)
 void show_usage (const char *argv0, FILE *out)
   {
   fprintf (out, "Usage: %s [options] {number} {from_units} {to_units}\n", argv0);
+  fprintf (out, "       %s [options] -c {number}{from_units} {to_units}\n", argv0);
   fprintf (out, "Options:\n");
+  fprintf (out, "  -c                Allow units to be combined with number\n");
   fprintf (out, "  -d                Force decimal output\n");
   fprintf (out, "  -h                Show this message\n");
   fprintf (out, "  -l                List available units\n");
