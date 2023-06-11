@@ -121,6 +121,11 @@ int main (int argc, char **argv)
         invalid = argv[optind];
         if (from != argv[optind]) *from = '\0'; // Don't include units in error.
         }
+      else if (*from == '\0')
+        {
+        fprintf (stderr, "%s: Missing destination units\n", argv[0]);
+        return 1;
+        }
       break;
     case 3:
       from = argv[optind + 1];
