@@ -145,7 +145,7 @@ int main (int argc, char **argv)
   if (invalid)
     {
     fprintf (stderr, "%s: %s\n", invalid,
-      errno == 0 ? "not a valid number" : strerror(errno));
+      errno == 0 ? "Not a valid number" : strerror(errno));
     return 1;
     }
 
