@@ -165,9 +165,10 @@ typedef struct _ConvTable
 ConvTable conv_table [] = 
   {
   // Temperature
+  // These are only used for conversions involving rates.
   {  celsius, 1, {1, {{ fahrenheit, 1, 0}}}, 1.8 },
-  {  kelvin, 1, {1, {{ fahrenheit, 1, 0}}}, 1.8 },
   {  fahrenheit, 1, {1, {{ fahrenheit, 1, 0}}}, 1 },
+  {  kelvin, 1, {1, {{ fahrenheit, 1, 0}}}, 1.8 },
 
   // Mass
   {  carat, 1, {1, {{ gramme, 1, 0}}}, 0.2 },
@@ -1072,9 +1073,11 @@ double units_reduce_to_base_units (const Units *from_units,
     }
 
   if (has_temperature && !is_rate)
+    {
     *error = strdup
       ("Units of temperature can only be converted to other units of temperature "
        "if they are not part of a rate");
+    }
 
   return r;
   }
