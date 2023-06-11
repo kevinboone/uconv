@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "units.h" 
 
 typedef enum {
@@ -36,7 +37,8 @@ void show_version (void)
 ============================================================================*/
 void show_usage (const char *argv0, FILE *out)
   {
-  fprintf (out, "Usage: %s [options] {number} {from_units} {to_units}\n", argv0);
+  fprintf (out, "Usage: %s [options] {number}{from_units} {to_units}\n", argv0);
+  fprintf (out, "       %s [options] {number} {from_units} {to_units}\n", argv0);
   fprintf (out, "Options:\n");
   fprintf (out, "  -d                Force decimal output\n");
   fprintf (out, "  -h                Show this message\n");
@@ -182,82 +184,107 @@ int main (int argc, char **argv)
     exit(0);
     }
 
-  if (argc  - optind != 3)
-    {
-    fprintf (stderr, "%s: Wrong number of arguments\n", argv[0]);
-    show_usage (argv[0], stderr);
-    }
-  else
-    {
-    double n;
-    if (sscanf (argv[optind], "%lf", &n) == 1)
-      {
-      char *error = NULL;
-      Units *fu = units_parse (argv[optind + 1], &error);
-      if (fu)
+  char *from, *to, *invalid = NULL;
+  double n;
+
+  switch (argc - optind) {
+    case 2:
+      to = argv[optind + 1];
+      errno = 0;
+      n = strtod (argv[optind], &from);
+      if (errno != 0 || from == argv[optind])
         {
-        Units *tu = units_parse (argv[optind + 2], &error);
-        if (tu)
+        invalid = argv[optind];
+        if (from != argv[optind]) *from = '\0'; // Don't include units in error.
+        }
+      else if (*from == '\0')
+        {
+        fprintf (stderr, "%s: Missing destination units\n", argv[0]);
+        return 1;
+        }
+      break;
+    case 3:
+      from = argv[optind + 1];
+      to = argv[optind + 2];
+      errno = 0;
+      n = strtod (argv[optind], &invalid);
+      // If strtod parsed the entire string, ensure "invalid" is set to NULL.
+      if (errno == 0 && invalid && *invalid == '\0') invalid = NULL;
+      break;
+    default:
+      fprintf (stderr, "%s: Wrong number of arguments; expected 2 or 3\n",
+        argv[0]);
+      show_usage (argv[0], stderr);
+      return 1;
+  }
+
+  if (invalid)
+    {
+    fprintf (stderr, "%s: %s\n", invalid,
+      errno == 0 ? "Not a valid number" : strerror(errno));
+    return 1;
+    }
+
+  char *error = NULL;
+  Units *fu = units_parse (from, &error);
+  if (fu)
+    {
+    Units *tu = units_parse (to, &error);
+    if (tu)
+      {
+      // When defaulting to IEC units, only convert to IEC units if all
+      // inputs are SI units. This allows conversion of SI to IEC by mixing
+      // unit types e.g. "10 gb gib".
+      if (default_to_iec)
+        {
+        int counts[digital_storage_prefix_enum_count] = {0};
+
+        for (i = 0; i < fu->n_elements; i++)
+          counts[data_unit_type (fu->units[i].unit)]++;
+
+        for (i = 0; i < tu->n_elements; i++)
+          counts[data_unit_type (tu->units[i].unit)]++;
+
+        if (counts[si_prefix] && !counts[iec_prefix])
           {
-          // When defaulting to IEC units, only convert to IEC units if all
-          // inputs are SI units. This allows conversion of SI to IEC by mixing
-          // unit types e.g. "10 gb gib".
-          if (default_to_iec)
-            {
-            int counts[digital_storage_prefix_enum_count] = {0};
+          for (i = 0; i < fu->n_elements; i++)
+            fu->units[i].unit = si_to_iec (fu->units[i].unit);
 
-            for (i = 0; i < fu->n_elements; i++)
-              counts[data_unit_type (fu->units[i].unit)]++;
-
-            for (i = 0; i < tu->n_elements; i++)
-              counts[data_unit_type (tu->units[i].unit)]++;
-
-            if (counts[si_prefix] && !counts[iec_prefix])
-              {
-              for (i = 0; i < fu->n_elements; i++)
-                fu->units[i].unit = si_to_iec (fu->units[i].unit);
-
-              for (i = 0; i < tu->n_elements; i++)
-                tu->units[i].unit = si_to_iec (tu->units[i].unit);
-              }
-            }
-
-          double res = units_convert (n, fu, tu, &error);
-          if (!error)
-            {
-            char *fs = units_format_string_and_value (fu, n, force_decimal);
-            char *ts = units_format_string_and_value (tu, res, force_decimal);
-            printf ("%s = %s\n", fs, ts);
-            free (fs);
-            free (ts);
-            }
-          else
-            {
-            fprintf (stderr, "Error: %s\n", error);
-            free (error);
-            }
-          units_free (tu);
+          for (i = 0; i < tu->n_elements; i++)
+            tu->units[i].unit = si_to_iec (tu->units[i].unit);
           }
-        else
-          {
-          fprintf (stderr, "Error: %s\n", error);
-          free (error);
-          }
+        }
 
-        units_free (fu);
+      double res = units_convert (n, fu, tu, &error);
+      if (!error)
+        {
+        char *fs = units_format_string_and_value (fu, n, force_decimal);
+        char *ts = units_format_string_and_value (tu, res, force_decimal);
+        printf ("%s = %s\n", fs, ts);
+        free (fs);
+        free (ts);
+        return 0;
         }
       else
         {
         fprintf (stderr, "Error: %s\n", error);
         free (error);
         }
+      units_free (tu);
       }
     else
       {
-      fprintf (stderr, "Invalid number: %lf\n", n);
+      fprintf (stderr, "Error: %s\n", error);
+      free (error);
       }
+
+    units_free (fu);
+    }
+  else
+    {
+    fprintf (stderr, "Error: %s\n", error);
+    free (error);
     }
 
-  return 0;
+  return 1;
   }
-
