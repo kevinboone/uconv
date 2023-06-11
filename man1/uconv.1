@@ -297,6 +297,13 @@ Show brief usage information
 Print a list of known unit names and synonyms
 .LP
 .TP
+.BI -s
+Use powers of 10 (SI) instead of 2 (IEC) for bytes and bits. Normally something
+like "1 kb" would be interpreted as 1024 bytes instead of 1000. If the input
+contains a mixture of SI prefixes and IEC prefixes (e.g. "20 mb mib"), it is
+presumed the user wishes to convert between SI and IEC units.
+.LP
+.TP
 .BI -v
 Show version number and exit
 .LP

@@ -11,6 +11,13 @@
 #include <ctype.h>
 #include "units.h" 
 
+typedef enum {
+  no_prefix,
+  iec_prefix,
+  si_prefix,
+  digital_storage_prefix_enum_count,
+} DigitalStoragePrefixType;
+
 
 /*============================================================================
   show_version 
@@ -34,7 +41,73 @@ void show_usage (const char *argv0, FILE *out)
   fprintf (out, "  -d                Force decimal output\n");
   fprintf (out, "  -h                Show this message\n");
   fprintf (out, "  -l                List available units\n");
+  fprintf (out, "  -s                Use powers of 10 instead of 2 for bytes and bits\n");
   fprintf (out, "  -v                Show version\n");
+  }
+
+
+/*============================================================================
+  data_unit_type
+============================================================================*/
+int data_unit_type (Unit u)
+  {
+  switch (u)
+    {
+    case kibibyte:
+    case mebibyte:
+    case gibibyte:
+    case tebibyte:
+    case pebibyte:
+    case exbibyte:
+    case kibibit:
+    case mebibit:
+    case gibibit:
+    case tebibit:
+    case pebibit:
+    case exbibit:
+      return iec_prefix;
+
+    case kilobyte:
+    case megabyte:
+    case gigabyte:
+    case terabyte:
+    case petabyte:
+    case exabyte:
+    case kilobit:
+    case megabit:
+    case gigabit:
+    case terabit:
+    case petabit:
+    case exabit:
+      return si_prefix;
+
+    default:
+      return no_prefix;
+    }
+  }
+
+
+/*============================================================================
+  si_to_iec
+============================================================================*/
+int si_to_iec (Unit u)
+  {
+  switch (u)
+    {
+    case kilobyte: return kibibyte;
+    case megabyte: return mebibyte;
+    case gigabyte: return gibibyte;
+    case terabyte: return tebibyte;
+    case petabyte: return pebibyte;
+    case exabyte: return exbibyte;
+    case kilobit: return kibibit;
+    case megabit: return mebibit;
+    case gigabit: return gibibit;
+    case terabit: return tebibit;
+    case petabit: return pebibit;
+    case exabit: return exbibit;
+    default: return u;
+    }
   }
 
 
@@ -48,6 +121,7 @@ int main (int argc, char **argv)
   BOOL list = FALSE;
   BOOL version = FALSE;
   BOOL force_decimal = FALSE;
+  BOOL default_to_iec = TRUE;
 
   // We have to parse the arguments manually, because the first argument
   //  might be a negative number
@@ -67,6 +141,9 @@ int main (int argc, char **argv)
               {
               case 'd':
                 force_decimal =TRUE;
+                break;
+              case 's':
+                default_to_iec =FALSE;
                 break;
               case 'v':
                 version =TRUE;
@@ -122,6 +199,29 @@ int main (int argc, char **argv)
         Units *tu = units_parse (argv[optind + 2], &error);
         if (tu)
           {
+          // When defaulting to IEC units, only convert to IEC units if all
+          // inputs are SI units. This allows conversion of SI to IEC by mixing
+          // unit types e.g. "10 gb gib".
+          if (default_to_iec)
+            {
+            int counts[digital_storage_prefix_enum_count] = {0};
+
+            for (i = 0; i < fu->n_elements; i++)
+              counts[data_unit_type (fu->units[i].unit)]++;
+
+            for (i = 0; i < tu->n_elements; i++)
+              counts[data_unit_type (tu->units[i].unit)]++;
+
+            if (counts[si_prefix] && !counts[iec_prefix])
+              {
+              for (i = 0; i < fu->n_elements; i++)
+                fu->units[i].unit = si_to_iec (fu->units[i].unit);
+
+              for (i = 0; i < tu->n_elements; i++)
+                tu->units[i].unit = si_to_iec (tu->units[i].unit);
+              }
+            }
+
           double res = units_convert (n, fu, tu, &error);
           if (!error)
             {
