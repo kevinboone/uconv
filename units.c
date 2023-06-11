@@ -189,6 +189,12 @@ typedef struct _ConvTable
 
 ConvTable conv_table [] = 
   {
+  // Temperature
+  // These are only used for conversions involving rates.
+  {  celsius, 1, {1, {{ fahrenheit, 1, 0}}}, 1.8 },
+  {  fahrenheit, 1, {1, {{ fahrenheit, 1, 0}}}, 1 },
+  {  kelvin, 1, {1, {{ fahrenheit, 1, 0}}}, 1.8 },
+
   // Mass
   {  carat, 1, {1, {{ gramme, 1, 0}}}, 0.2 },
   {  grain, 1, {1, {{ gramme, 1, 0}}}, 64.79891 / 1000 },
@@ -1089,6 +1095,7 @@ double units_reduce_to_base_units (const Units *from_units,
   double r = 1;
   from_base_units->n_elements = 0;
   int i, l = from_units->n_elements;
+  BOOL is_rate = FALSE, has_temperature = FALSE;
   for (i = 0; i < l && !*error; i++)
     {
     int index = units_find_conv_table_index (from_units->units[i].unit, 1);
@@ -1099,14 +1106,16 @@ double units_reduce_to_base_units (const Units *from_units,
          pow (10, from_units->units[i].prefix_power), 
            from_units->units[i].power);
       units_insert_elements (from_base_units, base_units, from_units->units[i].power);
+
+      if (from_units->units[i].power < 0)
+        is_rate = TRUE;
       }
     else
       {
       Unit fu = from_units->units[i].unit;
       if (fu == celsius || fu == fahrenheit || fu == kelvin)
         {
-        *error = strdup 
-          ("Units of temperature can only be converted to other units of temperature");
+        has_temperature = TRUE;
         }
       else
         {
@@ -1117,6 +1126,14 @@ double units_reduce_to_base_units (const Units *from_units,
         }
       }      
     }
+
+  if (has_temperature && !is_rate)
+    {
+    *error = strdup
+      ("Units of temperature can only be converted to other units of temperature "
+       "if they are not part of a rate");
+    }
+
   return r;
   }
 
