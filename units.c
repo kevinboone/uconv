@@ -1242,16 +1242,23 @@ char *units_format_string (const Units *self, BOOL plural)
   char s[256];
   s[0] = 0;
 
-  int i, l = self->n_elements;
+  int i, last_numerator = -1, l = self->n_elements;
+  for (i = 0; i < l; i++)
+   {
+   if (self->units[i].power < 0)
+     break;
+   last_numerator = i;
+   }
+
   for (i = 0; i < l; i++)
     {
     int power = self->units[i].power;
     int prefix_power = self->units[i].prefix_power;
     Unit unit = self->units[i].unit;
 
-    // Note that we only pluralize the first part of the name.
-    // It is feet/second, not feet/seconds
-    const char *uname = units_get_name (unit, plural && (i == 0));
+    // Note that we only pluralize the last unit of the numerator. It is
+    // feet/second, not feet/seconds and Newton.metres, not Newtons.metre.
+    const char *uname = units_get_name (unit, plural && (i == last_numerator));
 
     if (i == 0 && power == -1)
       {
