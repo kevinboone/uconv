@@ -6,6 +6,11 @@ uconv - a general-purpose unit converter
 </h2/><p/>
 <h3/>SYNOPSIS</h3/>
 
+<B>uconv</B>
+
+[options]&nbsp;{value}{from_units}&nbsp;{to_units}
+
+<P>
 <B>uconv </B>
 
 [options]&nbsp;{value}&nbsp;{from_units}&nbsp;{to_units}
@@ -39,6 +44,10 @@ consistent, and <I>uconv</I> will invert the result according. So, for example,
 it can convert miles/gallon to litres/km, even though these units are
 complementary, rather than equivalent. 
 <P>
+Although the examples in this manual are shown using 3 arguments -- one for the
+number, one for its units and the destination units -- the units can also be
+specified in the same argument as the coefficient.
+<P>
 <A NAME="lbAE">&nbsp;</A>
 <h3/>OVERVIEW OF OPERATION</h3/>
 
@@ -50,6 +59,13 @@ uconv {value} {from_units} {to_units}
 </PRE>
 
 <P>
+Or, for the two argument form:
+<P>
+<PRE>
+uconv {value}{from_units} {to_units}
+</PRE>
+
+<P>
 For example, to convert 6 feet to centimetres:
 <P>
 <PRE>
@@ -57,8 +73,15 @@ uconv 6 ft cm
 </PRE>
 
 <P>
+And the equivalent two-argument form:
+<P>
+<PRE>
+uconv 6ft cm
+</PRE>
+
+<P>
 However, because <I>uconv</I> recognizes a large number of synonyms for 
-unit names, the follow all produce the same result:
+unit names, the following all produce the same result:
 <P>
 <PRE>
 uconv 6 foot cm
@@ -97,8 +120,8 @@ m2
 </PRE>
 
 <P>
-The quotes around the last example are necessary to prevent the shell recognizing
-the space as an argument separator.
+The quotes around the last example are necessary to prevent the shell
+recognizing the space as an argument separator.
 <P>
 <P>
 <A NAME="lbAF">&nbsp;</A>
@@ -144,7 +167,7 @@ cm^-3
 </PRE>
 
 <P>
-Similar the second power can be represented with '^2' or '2' after the name,
+Similarly, the second power can be represented with '^2' or '2' after the name,
 or 'square' or 'sq' before it. Higher powers can be entered using numbers, but
 there are no names for these.
 <P>
@@ -154,14 +177,24 @@ there are no names for these.
 <P>
 Unit names can be preceded by SI prefixes: tera(T) giga(G), mega(M),
 kilo(k), deci(d), centi(c), milli(m), micro(u), <A HREF="/man/man2html?n+nano">nano</A>(n), pico(p).
-Prefixes are case-sensitive. 
+<P>
+<I>uconv</I> also recognizes IEC prefixes for data capacity units
+(gibibytes, mebibytes). These prefixes represent power-of-two
+multipliers, rather than the power-of-ten multipliers used for all
+other units. IEC prefixes are only allowed for units involving data
+capacity - there is no 'gibigram', for example. Where IEC units
+might be used, they are used by default, unless the <I>-s</I> switch
+is given. 
+<P>
+Prefixes are case-sensitive, although units generally are not.
+An exception is 'mb' for 'megabyte' -- see below for more on this point.
 <P>
 <A NAME="lbAI">&nbsp;</A>
 <H3>Names</H3>
 
 <P>
 All units can be entered with a variety of names and abbreviations. In general,  
-<I>uconv</I> name match is case insensitive even where the conventional name 
+<I>uconv</I>'s name match is case insensitive even where the conventional name 
 is upper-case or mixed case (e.g., mmHg for millimetres of mercury). This is
 simply to reduce the number of keypresses needed to get to the result.
 <P>
@@ -216,7 +249,8 @@ you expect, and refer to the list of units if necessary.
 <h3/>THINGS TO WATCH OUT FOR</h3/>
 
 <P>
-<I>uconv</I> favours traditional spellings of unit names: 'gramme' 
+In its output, <I>uconv</I> favours traditional spellings of 
+unit names: 'gramme' 
 over 'gram', 'metre' over 'meter'. Of course, both forms are accepted
 as input.
 <P>
@@ -253,7 +287,7 @@ prefix name in full ('milliinch').
 <P>
 Sometimes the same name is used for different units. There isn't much that
 <I>uconv</I> can do about this. For example, the unit 'cord' is used as a unit
-of area (mostly in the UK), and of volume (most in North America). The
+of area (mostly in the UK), and of volume (mostly in North America). The
 same is true for abbreviations -- 'C' is used for both coulombs and Celsius. 
 There's no
 way to get around this problem other than providing different name or abbreviation
@@ -267,7 +301,7 @@ uses the prefix 'us' to indicate US variants, e.g., 'uspint', 'usgallon', 'uston
 <P>
 Although it's not very mathematically sound, <I>uconv</I> recognizes 'kilo'
 as an abbreviation for 'kilogramme'. Of course, 'kilo' is really a prefix;
-none of the other prefixes (mega, centi, etc) are interpreted in thhis
+none of the other prefixes (mega, centi, etc) are interpreted in this
 loose way. 'kilo' is handled differently because its use as a measure of
 mass is so common.
 <P>
@@ -283,14 +317,11 @@ bigger than this -- strictly
 it's a kilocalorie. Food labelling is getting better in the UK, but it's still
 quite common to use the term 'calorie' to mean a kilocalorie. 
 <P>
-Units of temperature (Fahrenheit, Celsius, Kelvin) do not convert by
-simple multiplication, and therefore can't readily be converted except
-to other simple of units of temperature.
-<P>
 The units of radiation dose -- gray, rad, sievert, and REM -- can be
-freely converted using <I>uconv</I> because they have the same dimensions.
+freely -- and possibly wrongly -- converted using 
+<I>uconv</I> because they have the same dimensions.
 However, in practice they are not convertible, except where the radiation
-is photonic.
+is photonic. This is an issue of physics, not mathematics.
 <P>
 Radians cannot be abbreviated to 'rad' or 'rads', as these names are
 used by the unit of radiation dose, the rad.
@@ -314,6 +345,11 @@ in most disciplines.
 The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 (imperial) gallon. For US gallons, use 'miles/usgallon'.
 <BR>&nbsp;
+The units for digital storage and transmission have explicit definitions for
+the various prefixes so they can be entered in lowercase which violates SI
+conventions. For example, &quot;1 mbyte&quot; will be interpreted as &quot;1 megabyte&quot; rather
+than &quot;1 millibite&quot;. This usage is allowed because it is so common, and
+it's should cause problems in practice.
 <P>
 <A NAME="lbAM">&nbsp;</A>
 <h3/>OPTIONS</h3/>
@@ -331,6 +367,17 @@ Show brief usage information
 
 <DD>
 Print a list of known unit names and synonyms
+</DL>
+<P>
+
+<DL COMPACT>
+<DT><B>-s</B>
+
+<DD>
+Use powers of 10 (SI) instead of 2 (IEC) for bytes and bits. Normally something
+like &quot;1 kb&quot; would be interpreted as 1024 bytes instead of 1000. If the input
+contains a mixture of SI prefixes and IEC prefixes (e.g. &quot;20 mb mib&quot;), it is
+presumed the user wishes to convert between SI and IEC units.
 </DL>
 <P>
 
@@ -413,8 +460,9 @@ you can say 'km/hr', but not 'km per hour'.
 <h3/>AUTHOR AND LEGAL</h3/>
 
 <I>uconv</I>
-is maintained by Kevin Boone, and is open source under the
-terms of the GNU Public Licence, version 2.0. There is no warranty
+is maintained by Kevin Boone, with significant contributions from
+other authors, and is open source under the
+terms of the GNU Public Licence, version 3.0. There is no warranty
 of any kind.
 <P>
 <P>

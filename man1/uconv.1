@@ -1,10 +1,10 @@
-.\" Copyright (C) 2013-2022 Kevin Boone 
+.\" Copyright (C) 2013-2023 Kevin Boone and others
 .\" Permission is granted to any individual or institution to use, copy, or
 .\" redistribute this software so long as all of the original files are
 .\" included, and that this copyright notice
 .\" is retained.
 .\"
-.TH uconv 1 "March 2013"
+.TH uconv 1 "June 2023"
 .SH NAME
 uconv \- a general-purpose unit converter 
 .SH SYNOPSIS
@@ -70,7 +70,7 @@ uconv 6ft cm
 .fi
 
 However, because \fIuconv\fR recognizes a large number of synonyms for 
-unit names, the follow all produce the same result:
+unit names, the following all produce the same result:
 
 .nf
 uconv 6 foot cm
@@ -105,8 +105,8 @@ m2
 "square meters"
 .fi
 
-The quotes around the last example are necessary to prevent the shell recognizing
-the space as an argument separator.
+The quotes around the last example are necessary to prevent the shell
+recognizing the space as an argument separator.
 
 
 .SH UNIT FORMAT
@@ -145,7 +145,7 @@ cm3
 cm^-3
 .fi
 
-Similar the second power can be represented with '^2' or '2' after the name,
+Similarly, the second power can be represented with '^2' or '2' after the name,
 or 'square' or 'sq' before it. Higher powers can be entered using numbers, but
 there are no names for these.
 
@@ -153,12 +153,22 @@ there are no names for these.
 
 Unit names can be preceded by SI prefixes: tera(T) giga(G), mega(M),
 kilo(k), deci(d), centi(c), milli(m), micro(u), nano(n), pico(p).
-Prefixes are case-sensitive. 
+
+\fIuconv\fR also recognizes IEC prefixes for data capacity units
+(gibibytes, mebibytes). These prefixes represent power-of-two
+multipliers, rather than the power-of-ten multipliers used for all
+other units. IEC prefixes are only allowed for units involving data
+capacity - there is no 'gibigram', for example. Where IEC units
+might be used, they are used by default, unless the \fI-s\fR switch
+is given. 
+
+Prefixes are case-sensitive, although units generally are not.
+An exception is 'mb' for 'megabyte' -- see below for more on this point.
 
 .SS Names
 
 All units can be entered with a variety of names and abbreviations. In general,  
-\fIuconv\fR name match is case insensitive even where the conventional name 
+\fIuconv\fR's name match is case insensitive even where the conventional name 
 is upper-case or mixed case (e.g., mmHg for millimetres of mercury). This is
 simply to reduce the number of keypresses needed to get to the result.
 
@@ -207,7 +217,8 @@ you expect, and refer to the list of units if necessary.
 
 .SH THINGS TO WATCH OUT FOR
 
-\fIuconv\fR favours traditional spellings of unit names: 'gramme' 
+In its output, \fIuconv\fR favours traditional spellings of 
+unit names: 'gramme' 
 over 'gram', 'metre' over 'meter'. Of course, both forms are accepted
 as input.
 
@@ -242,7 +253,7 @@ prefix name in full ('milliinch').
 
 Sometimes the same name is used for different units. There isn't much that
 \fIuconv\fR can do about this. For example, the unit 'cord' is used as a unit
-of area (mostly in the UK), and of volume (most in North America). The
+of area (mostly in the UK), and of volume (mostly in North America). The
 same is true for abbreviations -- 'C' is used for both coulombs and Celsius. 
 There's no
 way to get around this problem other than providing different name or abbreviation
@@ -256,7 +267,7 @@ uses the prefix 'us' to indicate US variants, e.g., 'uspint', 'usgallon', 'uston
 
 Although it's not very mathematically sound, \fIuconv\fR recognizes 'kilo'
 as an abbreviation for 'kilogramme'. Of course, 'kilo' is really a prefix;
-none of the other prefixes (mega, centi, etc) are interpreted in thhis
+none of the other prefixes (mega, centi, etc) are interpreted in this
 loose way. 'kilo' is handled differently because its use as a measure of
 mass is so common.
 
@@ -270,14 +281,11 @@ bigger than this -- strictly
 it's a kilocalorie. Food labelling is getting better in the UK, but it's still
 quite common to use the term 'calorie' to mean a kilocalorie. 
 
-Units of temperature (Fahrenheit, Celsius, Kelvin) do not convert by
-simple multiplication, and therefore can't readily be converted except
-to other simple of units of temperature.
-
 The units of radiation dose -- gray, rad, sievert, and REM -- can be
-freely converted using \fIuconv\fR because they have the same dimensions.
+freely -- and possibly wrongly -- converted using 
+\fIuconv\fR because they have the same dimensions.
 However, in practice they are not convertible, except where the radiation
-is photonic.
+is photonic. This is an issue of physics, not mathematics.
 
 Radians cannot be abbreviated to 'rad' or 'rads', as these names are
 used by the unit of radiation dose, the rad.
@@ -304,7 +312,8 @@ The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 The units for digital storage and transmission have explicit definitions for
 the various prefixes so they can be entered in lowercase which violates SI
 conventions. For example, "1 mbyte" will be interpreted as "1 megabyte" rather
-than "1 millibite".
+than "1 millibite". This usage is allowed because it is so common, and
+it's should cause problems in practice.
 
 .SH "OPTIONS"
 .TP
@@ -390,8 +399,9 @@ you can say 'km/hr', but not 'km per hour'.
 
 .SH AUTHOR AND LEGAL
 \fIuconv\fR
-is maintained by Kevin Boone, and is open source under the
-terms of the GNU Public Licence, version 2.0. There is no warranty
+is maintained by Kevin Boone, with significant contributions from
+other authors, and is open source under the
+terms of the GNU Public Licence, version 3.0. There is no warranty
 of any kind.
 
 
