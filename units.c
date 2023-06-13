@@ -396,20 +396,6 @@ ConvTable conv_table [] =
   Special case units 
 ============================================================================*/
 
-typedef struct _SpecialCaseUnits 
-  {
-  const char *name;
-  Units units; 
-  const char *desc;
-  } SpecialCaseUnits;
- 
-SpecialCaseUnits fahrenheit_scu = 
-  { "fahrenheit", {1, {{fahrenheit, 1, 0}}}, "fahrenheit"};
-SpecialCaseUnits celsius_scu = 
-  { "celsius", {1, {{celsius, 1, 0}}}, "celsius"};
-SpecialCaseUnits kelvin_scu = 
-  { "kelvin", {1, {{kelvin, 1, 0}}}, "kelvin"};
-
 // Constants for specific units -- used to check whether to invoke specific
 //  formatting rules
 
@@ -1139,50 +1125,31 @@ double units_reduce_to_base_units (const Units *from_units,
 
 
 /*============================================================================
+  temperature_unit
+============================================================================*/
+BOOL temperature_unit (const Units *u)
+  {
+    switch (u->units[0].unit)
+      {
+      case celsius:
+      case fahrenheit:
+      case kelvin:
+        return u->n_elements == 1;
+      default:
+        return FALSE;
+      }
+  }
+
+
+/*============================================================================
   units_convert
 ============================================================================*/
 double units_convert (double n, const Units *from_units, 
     const Units *to_units, char **error)
   {
-  BOOL dummy;
-
   // Check for temperature conversion, which is a special case
-  if (units_compare_units (from_units, &(fahrenheit_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(celsius_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, fahrenheit, celsius); 
-
-  if (units_compare_units (from_units, &(fahrenheit_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(kelvin_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, fahrenheit, kelvin); 
-
-  if (units_compare_units (from_units, &(celsius_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(fahrenheit_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, celsius, fahrenheit); 
-
-  if (units_compare_units (from_units, &(celsius_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(kelvin_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, celsius, kelvin); 
-    
-  if (units_compare_units (from_units, &(kelvin_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(celsius_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, kelvin, celsius); 
-    
-  if (units_compare_units (from_units, &(kelvin_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(fahrenheit_scu.units), FALSE, &dummy)))
-    return units_convert_temp (n, kelvin, fahrenheit); 
-    
-  if (units_compare_units (from_units, &(celsius_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(celsius_scu.units), FALSE, &dummy)))
-     return n;
- 
-  if (units_compare_units (from_units, &(fahrenheit_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(fahrenheit_scu.units), FALSE, &dummy)))
-    return n; 
-    
-  if (units_compare_units (from_units, &(kelvin_scu.units), FALSE, &dummy) && 
-       (units_compare_units (to_units, &(kelvin_scu.units), FALSE, &dummy)))
-    return n; 
-    
+  if (temperature_unit (from_units) && temperature_unit (to_units))
+    return units_convert_temp (n, from_units->units[0].unit, to_units->units[0].unit);
 
   // Not temperature. Check general cases
 
