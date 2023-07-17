@@ -165,6 +165,7 @@ UnitTable unit_table [] =
   { usgallon, "usgallon", "usgallons,usgal,usgals", "US gallon" , "usgallons" }, 
   { ushundredweight, "ushundredweight", "uscwt", "US hundredweight" , 
      "US hundredweight" }, 
+  { usmpg, "usmpg", "usmpg", "miles per gallon (US)" , "usmpg" },
   { uspint, "uspint", "uspints,uspt,uspts", "US pint" , "uspints" }, 
   { usquart, "usquart", "usquarts,usqt,usqts", "US quart" , "usquarts" }, 
   { uston, "uston", "ustons", "US (short) ton" , "ustons" }, 
@@ -290,6 +291,7 @@ ConvTable conv_table [] =
 
   // Fuel economy 
   {  mpg, 1, {1, {{meter, -2, 0},}}, 354006.1899 },
+  {  usmpg, 1, {1, {{meter, -2, 0},}}, 425143.7074302721 },
   {  litreper100km, 1, {1, {{meter, 2, 0},}}, 1e-8 },
 
   // Velocity
