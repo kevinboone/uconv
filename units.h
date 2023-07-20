@@ -37,7 +37,7 @@ typedef enum { meter = 1, second, hectare, foot, acre, usacre, hour, minute, day
    kilobyte, megabyte, gigabyte, terabyte, petabyte, exabyte, kibibyte, mebibyte,
    gibibyte, tebibyte, pebibyte, exbibyte, bit, kilobit, megabit, gigabit, terabit,
    petabit, exabit, kibibit, mebibit, gibibit, tebibit, pebibit, exbibit, rankine,
-   usmpg}
+   usmpg, usfluid_ounce}
   Unit;
 
 typedef struct _UnitAndPower
