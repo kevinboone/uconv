@@ -39,6 +39,10 @@ UnitTable unit_table [] =
   { acre, "acre", "acres", "acre (international)", "acres" }, 
   { angstrom, "angstrom", "angstroms,ang,angs", "angstrom", "angstroms" }, 
   { ampere, "ampere", "amperes,amp,amps,A", "ampere", "amperes" }, 
+  { arc_minute, "arc-minute", "arcmin,arcmins,arcminute,arcminutes,arc-minutes,moa",
+     "arc minute", "arc minutes" },
+  { arc_second, "arc-second", "arcsec,arcsecs,arcsecond,arcseconds,arc-seconds",
+     "arc second", "arc seconds" },
   { au, "AU", "au", "astronomical unit", "AUs" }, 
   { bar, "bar", "bar,bars", "bar" , "bars" }, 
   { becquerel, "becquerel", "becquerels,Bq,Bqs", "becquerel" , "becquerels" }, 
@@ -56,6 +60,7 @@ UnitTable unit_table [] =
   { coulomb, "coulomb", "coulombs,coul,couls", "coulomb", "coulombs" }, 
   { curie, "curie", "curies,ci", "curie", "curies" }, 
   { degree, "degree", "degrees,deg,degs", "angular degree" , "degrees" }, 
+  { dms, "dms", "", "degrees with minutes and seconds" , "degrees" },
   { day, "day", "days", "day" , "days" }, 
   { dyne, "dyne", "dyn", "dyne" , "dynes" }, 
   { electron_volt, "electron-volt", "electron-volts,ev,evs", "electron volt"  ,
@@ -308,6 +313,9 @@ ConvTable conv_table [] =
   // Angle
   {  radian, 1, {1, {{radian, 1, 0}}},  1 },
   {  degree, 1, {1, {{radian, 1, 0}}},  2 * M_PI / 360.0 },
+  {  dms, 1, {1, {{radian, 1, 0}}},  2 * M_PI / 360.0 },
+  {  arc_minute, 1, {1, {{radian, 1, 0}}},  2 * M_PI / 21600.0 },
+  {  arc_second, 1, {1, {{radian, 1, 0}}},  2 * M_PI / 1296000.0 },
   {  gradian, 1, {1, {{radian, 1, 0}}},  2 * M_PI / 400.0 },
   {  revolution, 1, {1, {{radian, 1, 0}}},  2 * M_PI },
 
@@ -398,25 +406,6 @@ ConvTable conv_table [] =
   {  0 }
   };
 
-
-/*============================================================================
-  Special case units 
-============================================================================*/
-
-// Constants for specific units -- used to check whether to invoke specific
-//  formatting rules
-
-Units units_yard = {1, {{yard, 1, 0}}};
-Units units_foot = {1, {{foot, 1, 0}}};
-Units units_mile = {1, {{mile, 1, 0}}};
-Units units_hour = {1, {{hour, 1, 0}}};
-Units units_minute = {1, {{minute, 1, 0}}};
-Units units_ton = {1, {{ton, 1, 0}}};
-Units units_hundredweight = {1, {{hundredweight, 1, 0}}};
-Units units_pound = {1, {{pound, 1, 0}}};
-Units units_stone = {1, {{stone, 1, 0}}};
-Units units_gallon = {1, {{gallon, 1, 0}}};
-Units units_pint = {1, {{pint, 1, 0}}};
 
 /*============================================================================
   unit_find_unit_by_name
@@ -841,6 +830,52 @@ const char *units_get_name (Unit unit, BOOL plural)
     }
   else
     return "?";
+  }
+
+
+/*============================================================================
+  _subdivide and helper macro SUBDIVIDE
+============================================================================*/
+
+// Macro to abstract boilerplate aspects of _subdivide call.
+#define SUBDIVIDE(n, ...) _subdivide(n, (Unit[]){__VA_ARGS__, 0})
+
+char *_subdivide(double n, Unit* divisions)
+  {
+    char s[256];
+    double ratio, whole = 0;
+    size_t length = 0;
+
+    if (n < 0)
+      {
+      n = -n;
+      length += 1;
+      strcpy (s, "-");
+      }
+
+    do
+      {
+      if (!*(divisions + 1))
+        {
+        snprintf (s + length, sizeof (s) - length, "%lG %s", n,
+          units_get_name (*divisions, n != 1.0));
+        break;
+        }
+
+      // This assumes the ratio from one division to the next is always an
+      // integer and distant enough so rounding will always return the intended
+      // ratio.
+      ratio = round (
+        conv_table[units_find_conv_table_index (*divisions, 1)].slope /
+        conv_table[units_find_conv_table_index (*(divisions + 1), 1)].slope
+      );
+
+      n = modf (n, &whole) * ratio;
+      length += snprintf (s + length, sizeof (s) - length, n ? "%d %s, " : "%d %s",
+        (int) whole, units_get_name (*divisions++, whole != 1.0));
+     } while (n);
+
+    return strdup (s);
   }
 
 
@@ -1286,470 +1321,68 @@ char *units_format_string (const Units *self, BOOL plural)
   return ret;
   }
 
-
-/*============================================================================
-  units_format_feet
-============================================================================*/
-char *units_format_feet (double feet)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (feet < 0) 
-    {
-    feet = -feet;
-    strcpy (s, "-");
-    }
-    
-  double whole_feet = floor (feet);
-  double inches = (feet - whole_feet) * 12.0;
-
-  if (inches != 0.00)
-    {
-#ifdef WIN32
-    sprintf (s + strlen (s), 
-      "%d %s, %lG %s", (int)whole_feet, whole_feet == 1.000 ? "foot" : "feet",
-        inches, inches == 1.000 ? "inch" : "inches");
-#else
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %lG %s", (int)whole_feet, whole_feet == 1.000 ? "foot" : "feet",
-        inches, inches == 1.000 ? "inch" : "inches");
-#endif
-    }
-  else
-    {
-#ifdef WIN32
-    sprintf (s + strlen (s), 
-      "%d %s", (int)whole_feet, whole_feet == 1.000 ? "foot" : "feet");
-#else
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_feet, whole_feet == 1.000 ? "foot" : "feet");
-#endif
-    }
-
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_yards
-============================================================================*/
-char *units_format_yards (double yards)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (yards < 0) 
-    {
-    yards = -yards;
-    strcpy (s, "-");
-    }
-    
-  double whole_yards = floor (yards);
-  double feet = (yards - whole_yards) * 3.0;
-
-
-  if (feet != 0.00)
-    {
-    char *s_feet = units_format_feet (feet);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_yards, 
-        whole_yards == 1.000 ? "yard" : "yards", s_feet);
-    free (s_feet);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_yards, 
-        whole_yards == 1.000 ? "yard" : "yards");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_miles
-============================================================================*/
-char *units_format_miles (double miles)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (mile < 0) 
-    {
-    miles = -miles;
-    strcpy (s, "-");
-    }
-    
-  double whole_miles = floor (miles);
-  double yards = (miles - whole_miles) * 1760.0;
-
-
-  if (yards != 0.00)
-    {
-    char *s_yards = units_format_yards (yards);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_miles, 
-        whole_miles == 1.000 ? "mile" : "miles", s_yards);
-    free (s_yards);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_miles, 
-        whole_miles == 1.000 ? "mile" : "miles");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_minutes
-============================================================================*/
-char *units_format_minutes (double minutes)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (minutes < 0) 
-    {
-    minutes = -minutes;
-    strcpy (s, "-");
-    }
-    
-  double whole_minutes = floor (minutes);
-  double seconds = (minutes - whole_minutes) * 60.0;
-
-  if (seconds != 0.00)
-    {
-#ifdef WIN32
-    sprintf (s + strlen (s), 
-      "%d %s, %lG %s", (int)whole_minutes, 
-        whole_minutes == 1.000 ? "minute" : "minutes",
-        seconds, seconds == 1.000 ? "second" : "seconds");
-#else
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %lG %s", (int)whole_minutes, 
-        whole_minutes == 1.000 ? "minute" : "minutes",
-        seconds, seconds == 1.000 ? "second" : "seconds");
-#endif
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_minutes, whole_minutes == 1.000 ? "minute" : "minutes");
-    }
-
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_hours
-============================================================================*/
-char *units_format_hours (double hours)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (hour < 0) 
-    {
-    hours = -hours;
-    strcpy (s, "-");
-    }
-    
-  double whole_hours = floor (hours);
-  double minutes = (hours - whole_hours) * 60.0;
-
-  if (minutes != 0.00)
-    {
-    char *s_minutes = units_format_minutes (minutes);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_hours, 
-        whole_hours == 1.000 ? "hour" : "hours", s_minutes);
-    free (s_minutes);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_hours, 
-        whole_hours == 1.000 ? "hour" : "hours");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_pounds
-============================================================================*/
-char *units_format_pounds (double pounds)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (pounds < 0) 
-    {
-    pounds = -pounds;
-    strcpy (s, "-");
-    }
-    
-  double whole_pounds = floor (pounds);
-  double ounces = (pounds - whole_pounds) * 16.0;
-
-  if (ounces != 0.00)
-    {
-#ifdef WIN32
-    sprintf (s + strlen (s), 
-      "%d %s, %lG %s", (int)whole_pounds, 
-        whole_pounds == 1.000 ? "pound" : "pounds",
-        ounces, ounces == 1.000 ? "ounce" : "ounces");
-#else
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %lG %s", (int)whole_pounds, 
-        whole_pounds == 1.000 ? "pound" : "pounds",
-        ounces, ounces == 1.000 ? "ounce" : "ounces");
-#endif
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_pounds, whole_pounds == 1.000 ? "pound" : "pounds");
-    }
-
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_stones
-============================================================================*/
-char *units_format_stones (double stones)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (stone < 0) 
-    {
-    stones = -stones;
-    strcpy (s, "-");
-    }
-    
-  double whole_stones = floor (stones);
-  double pound = (stones - whole_stones) * 14.0;
-
-  if (pound != 0.00)
-    {
-    char *s_pound = units_format_pounds (pound);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_stones, 
-        whole_stones == 1.000 ? "stone" : "stones", s_pound);
-    free (s_pound);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_stones, 
-        whole_stones == 1.000 ? "stone" : "stones");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_hundredweight
-============================================================================*/
-char *units_format_hundredweight (double hundredweight)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (hour < 0) 
-    {
-    hundredweight = -hundredweight;
-    strcpy (s, "-");
-    }
-    
-  double whole_hundredweight = floor (hundredweight);
-  double stone = (hundredweight - whole_hundredweight) * 8.0;
-
-  if (stone != 0.00)
-    {
-    char *s_stone = units_format_stones (stone);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_hundredweight, 
-        whole_hundredweight == 1.000 ? "hundredweight" : "hundredweight", s_stone);
-    free (s_stone);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_hundredweight, 
-        whole_hundredweight == 1.000 ? "hundredweight" : "hundredweight");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_tons
-============================================================================*/
-char *units_format_tons (double tons)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (ton < 0) 
-    {
-    tons = -tons;
-    strcpy (s, "-");
-    }
-    
-  double whole_tons = floor (tons);
-  double hundredweight = (tons - whole_tons) * 20.0;
-
-  if (hundredweight != 0.00)
-    {
-    char *s_hundredweight = units_format_hundredweight (hundredweight);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_tons, 
-        whole_tons == 1.000 ? "ton" : "tons", s_hundredweight);
-    free (s_hundredweight);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_tons, 
-        whole_tons == 1.000 ? "ton" : "tons");
-    }
-  
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_pints
-============================================================================*/
-char *units_format_pints (double pints)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (pints < 0) 
-    {
-    pints = -pints;
-    strcpy (s, "-");
-    }
-    
-  double whole_pints = floor (pints);
-  double fluid_ounces = (pints - whole_pints) * 16.0;
-
-  if (fluid_ounces != 0.00)
-    {
-#ifdef WIN32
-    sprintf (s + strlen (s), 
-      "%d %s, %lG %s", (int)whole_pints, 
-        whole_pints == 1.000 ? "pint" : "pints",
-        fluid_ounces, fluid_ounces == 1.000 ? "fluid-ounce" : "fluid-ounces");
-#else
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %lG %s", (int)whole_pints, 
-        whole_pints == 1.000 ? "pint" : "pints",
-        fluid_ounces, fluid_ounces == 1.000 ? "fluid-ounce" : "fluid-ounces");
-#endif
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_pints, whole_pints == 1.000 ? "pint" : "pints");
-    }
-
-  return strdup(s);
-  }
-
-
-/*============================================================================
-  units_format_gallons
-============================================================================*/
-char *units_format_gallons (double gallons)
-  {
-  char s[64];
-  s[0] = 0;
-
-  if (gallon < 0) 
-    {
-    gallons = -gallons;
-    strcpy (s, "-");
-    }
-    
-  double whole_gallons = floor (gallons);
-  double pint = (gallons - whole_gallons) * 8.0;
-
-  if (pint != 0.00)
-    {
-    char *s_pint = units_format_pints (pint);
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s, %s", (int)whole_gallons, 
-        whole_gallons == 1.000 ? "gallon" : "gallons", s_pint);
-    free (s_pint);
-    }
-  else
-    {
-    snprintf (s + strlen (s), sizeof (s) - strlen(s), 
-      "%d %s", (int)whole_gallons, 
-        whole_gallons == 1.000 ? "gallon" : "gallons");
-    }
-  
-  return strdup(s);
-  }
-
-
 /*============================================================================
   units_format_string_and_value
 ============================================================================*/
 char *units_format_string_and_value (const Units *self, double n, 
     BOOL force_decimal)
   {
-  BOOL dummy;
-
-  if (!force_decimal)
+  if (!force_decimal && self->n_elements == 1 && self->units[0].power == 1 &&
+      self->units[0].prefix_power == 0)
     {
-    if (units_compare_units (self, &units_mile, FALSE, &dummy))
-      return units_format_miles (n);
+    switch (self->units[0].unit)
+      {
+      case mile:
+        return SUBDIVIDE(n, mile, yard, foot, inch);
 
-    if (units_compare_units (self, &units_yard, FALSE, &dummy))
-      return units_format_yards (n);
+      case yard:
+        return SUBDIVIDE(n, yard, foot, inch);
 
-    if (units_compare_units (self, &units_foot, FALSE, &dummy))
-      return units_format_feet (n);
+      case foot:
+        return SUBDIVIDE(n, foot, inch);
 
-    if (units_compare_units (self, &units_hour, FALSE, &dummy))
-      return units_format_hours (n);
+      case hour:
+        return SUBDIVIDE(n, hour, minute);
 
-    if (units_compare_units (self, &units_minute, FALSE, &dummy))
-      return units_format_minutes (n);
+      case minute:
+        return SUBDIVIDE(n, minute, second);
 
-    if (units_compare_units (self, &units_ton, FALSE, &dummy))
-      return units_format_tons (n);
+      case ton:
+        return SUBDIVIDE(n, ton, hundredweight, stone, pound, ounce);
 
-    if (units_compare_units (self, &units_hundredweight, FALSE, &dummy))
-      return units_format_hundredweight (n);
+      case hundredweight:
+        return SUBDIVIDE(n, hundredweight, stone, pound, ounce);
 
-    if (units_compare_units (self, &units_pound, FALSE, &dummy))
-      return units_format_pounds (n);
+      case stone:
+        return SUBDIVIDE(n, stone, pound, ounce);
 
-    if (units_compare_units (self, &units_stone, FALSE, &dummy))
-      return units_format_stones (n);
+      case pound:
+        return SUBDIVIDE(n, pound, ounce);
 
-    if (units_compare_units (self, &units_gallon, FALSE, &dummy))
-      return units_format_gallons (n);
+      case gallon:
+        return SUBDIVIDE(n, gallon, pint, fluid_ounce);
 
-    if (units_compare_units (self, &units_pint, FALSE, &dummy))
-      return units_format_pints (n);
+      case pint:
+        return SUBDIVIDE(n, pint, fluid_ounce);
+
+      case usgallon:
+        return SUBDIVIDE(n, usgallon, uspint, usfluid_ounce);
+
+      case uspint:
+        return SUBDIVIDE(n, uspint, usfluid_ounce);
+
+      case dms:
+        return SUBDIVIDE(n, dms, arc_minute, arc_second);
+
+      case arc_minute:
+        return SUBDIVIDE(n, arc_minute, arc_second);
+
+      case uston:
+        return SUBDIVIDE(n, uston, pound);
+
+      default:
+        break;
+      }
     }
 
 
