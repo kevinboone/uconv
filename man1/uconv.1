@@ -108,6 +108,20 @@ m2
 The quotes around the last example are necessary to prevent the shell
 recognizing the space as an argument separator.
 
+There are two units representing degrees in uconv: 'degrees' and 'dms'. These
+are internally equivalent, but when using 'dms' as the conversion destination
+unit, the output will be displayed as degrees with the fractional part
+subdivided into arc minutes and arc seconds whereas 'degrees' is entirely
+decimal. Using '-d' with 'dms' is the same as using 'degrees':
+
+.nf
+$ uconv 1.7 radians degrees
+1.7 radians = 97.4028 degrees
+$ uconv 1.7 radians dms
+1.7 radians = 97 degrees, 24 arc minutes, 10.1706 arc seconds
+$ uconv -d 1.7 radians dms
+1.7 radians = 97.4028 degrees
+.fi
 
 .SH UNIT FORMAT
 
