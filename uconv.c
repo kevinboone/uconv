@@ -26,7 +26,7 @@ typedef enum {
 void show_version (void)
   {
   printf ("%s version %s\n", NAME, VERSION);
-  printf ("Copyright (c)2013-2022 Kevin Boone\n");
+  printf ("Copyright (c)2013-2024 Kevin Boone and others\n");
   printf ("Freely distrbutable under the terms of the GNU Public Licence, v3.0");
   printf ("\n");
   }

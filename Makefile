@@ -1,12 +1,14 @@
 all: uconv
-VERSION=0.0.3
-NAME=uconv
-APPNAME=$(NAME)
-PREFIX=/usr
-BINDIR=$(PREFIX)/bin
-MANDIR=$(PREFIX)/share/man/man1
+VERSION = 0.0.4
+NAME    = uconv
+APPNAME = $(NAME)
+PREFIX  = /usr
+BINDIR  = $(PREFIX)/bin
+MANDIR  = $(PREFIX)/share/man/man1
+CFLAGS  ?= 
+LDFLAGS ?=
 
-MYCFLAGS=-O2 -Wall -Wextra -Werror -DVERSION=\"$(VERSION)\" -DNAME=\"$(NAME)\" $(CFLAGS)
+MYCFLAGS=-O2 -Wall -Wextra -Wno-unused-result -DVERSION=\"$(VERSION)\" -DNAME=\"$(NAME)\" $(CFLAGS)
 MYLDFLAGS=$(LDFLAGS)
 
 uconv: uconv.o units.o

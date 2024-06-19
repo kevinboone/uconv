@@ -1,6 +1,6 @@
 <h1>uconv -- a general unit converter for the command line</h1> 
 
-Version 0.0.4, June 2023 
+Version 0.0.4, June 2024 
 
 <h2>What is this?</h2>
 
@@ -98,7 +98,7 @@ See the [uconv man page](uconv.man.html).
 <h2>Legal and copying</h2>
 
 <code>uconv</code> is maintained by Kevin Boone with substantial 
-contributions from other authors. It is copyright (c)2013-2023, distributed
+contributions from other authors. It is copyright (c)2013-2024, distributed
 under the terms of the GNU Public Licence, version 3.0. There is no
 warranty of any kind.
 
