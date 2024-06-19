@@ -90,6 +90,18 @@ To build from source, unpack the source bundle and
 run <code>make</code>, followed
 by <code>make install</code>. <code>uconv</code> has no unusual dependencies,
 and should build on most POSIX-like platforms.
+<p/>
+
+NOTE: because <code>uconv</code> is an executable that already exists on
+many Linux installations, it's possible to rename the binary at installation
+time:
+
+<pre>
+sudo NAME=unconv make install
+</pre>
+
+This not only renames the files, but changes the name of the utility in
+the man page.
 
 <h2>Further information</h2>
 

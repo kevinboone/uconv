@@ -1,12 +1,13 @@
 all: uconv
 VERSION = 0.0.4
-NAME    = uconv
+NAME    ?= uconv
 APPNAME = $(NAME)
-PREFIX  = /usr
+PREFIX  := /usr
 BINDIR  = $(PREFIX)/bin
 MANDIR  = $(PREFIX)/share/man/man1
 CFLAGS  ?= 
 LDFLAGS ?=
+DESTDIR ?= /
 
 MYCFLAGS=-O2 -Wall -Wextra -Wno-unused-result -DVERSION=\"$(VERSION)\" -DNAME=\"$(NAME)\" $(CFLAGS)
 MYLDFLAGS=$(LDFLAGS)
@@ -24,11 +25,11 @@ units.o: units.c units.h
 clean:
 	rm -f *.o *.stackdump uconv uconv.man.html
 
-install: all
-	mkdir -p $(DESTDIR)/$(MANDIR)
-	mkdir -p $(DESTDIR)/$(BINDIR)
-	cp -p man1/uconv.1 $(DESTDIR)/$(MANDIR)
-	cp -p uconv $(DESTDIR)/$(BINDIR)
+install: 
+	install -D -m 755 uconv $(DESTDIR)/$(BINDIR)/$(NAME)
+	install -D -m 644 man1/uconv.1 $(DESTDIR)/$(MANDIR)/$(NAME).1
+	sed -i s/uconv/unconv/g $(DESTDIR)/$(MANDIR)/$(NAME).1
 
 doc:
 	perl makeman.pl > uconv.man.html
+
