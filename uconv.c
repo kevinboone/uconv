@@ -121,7 +121,7 @@ double fractod (char *text, char **endptr)
   double a, b, result = 0;
   int length = 0, x;
 
-  if (sscanf(text, "%d %lf/%lf%n", &x, &a, &b, &length) != EOF && length)
+  if (sscanf(text, "%d %lf / %lf %n", &x, &a, &b, &length) != EOF && length)
     {
     if (a < 0 || b <= 0 || a > b)
       {
@@ -133,7 +133,7 @@ double fractod (char *text, char **endptr)
       result = (double) x + (x < 0 ? -a / b : a / b);
       }
     }
-  else if (sscanf(text, "%lf/%lf%n", &a, &b, &length) != EOF && length)
+  else if (sscanf(text, "%lf / %lf %n", &a, &b, &length) != EOF && length)
     {
     if (b <= 0)
       {
@@ -143,7 +143,7 @@ double fractod (char *text, char **endptr)
     else
       result = a / b;
     }
-  else if (sscanf(text, "%lf%n", &a, &length) != EOF && length)
+  else if (sscanf(text, "%lf %n", &a, &length) != EOF && length)
     result = a;
   else if (*text == '\0')
     errno = EINVAL;
