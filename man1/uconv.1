@@ -69,6 +69,18 @@ And the equivalent two-argument form:
 uconv 6ft cm
 .fi
 
+Fractional values are also accepted:
+
+.nf
+uconv 1/32in mm
+uconv "7 1/2mi" km
+uconv "-20 1/2" f c
+.fi
+
+When using mixed fractions in the form of "a b/c" or "-a b/c", neither the
+numerator nor the denominator can be negative, and the numerator must be less
+than the denominator.
+
 However, because \fIuconv\fR recognizes a large number of synonyms for 
 unit names, the following all produce the same result:
 
