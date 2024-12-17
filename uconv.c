@@ -113,6 +113,49 @@ int si_to_iec (Unit u)
 
 
 /*============================================================================
+  fractod
+  Like strtod(3) but also handles fractions in the form of "a/b" and "a b/c".
+============================================================================*/
+double fractod (char *text, char **endptr)
+  {
+  double a, b, result = 0;
+  int length = 0, x;
+
+  if (sscanf(text, "%d %lf / %lf %n", &x, &a, &b, &length) != EOF && length)
+    {
+    if (a < 0 || b <= 0 || a > b)
+      {
+      length = 0;
+      errno = EINVAL;
+      }
+    else
+      {
+      result = (double) x + (x < 0 ? -a / b : a / b);
+      }
+    }
+  else if (sscanf(text, "%lf / %lf %n", &a, &b, &length) != EOF && length)
+    {
+    if (b <= 0)
+      {
+      length = 0;
+      errno = EINVAL;
+      }
+    else
+      result = a / b;
+    }
+  else if (sscanf(text, "%lf %n", &a, &length) != EOF && length)
+    result = a;
+  else if (*text == '\0')
+    errno = EINVAL;
+
+  if (endptr)
+    *endptr = text + length;
+
+  return result;
+  }
+
+
+/*============================================================================
   main
 ============================================================================*/
 int main (int argc, char **argv)
@@ -190,7 +233,7 @@ int main (int argc, char **argv)
     case 2:
       to = argv[optind + 1];
       errno = 0;
-      n = strtod (argv[optind], &from);
+      n = fractod (argv[optind], &from);
       if (errno != 0 || from == argv[optind])
         {
         invalid = argv[optind];
@@ -206,8 +249,8 @@ int main (int argc, char **argv)
       from = argv[optind + 1];
       to = argv[optind + 2];
       errno = 0;
-      n = strtod (argv[optind], &invalid);
-      // If strtod parsed the entire string, ensure "invalid" is set to NULL.
+      n = fractod (argv[optind], &invalid);
+      // If fractod parsed the entire string, ensure "invalid" is set to NULL.
       if (errno == 0 && invalid && *invalid == '\0') invalid = NULL;
       break;
     default:
