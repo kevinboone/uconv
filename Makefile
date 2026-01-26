@@ -1,5 +1,5 @@
 all: uconv
-VERSION = 0.0.4
+VERSION = 0.0.5
 NAME    ?= uconv
 APPNAME = $(NAME)
 PREFIX  := /usr
