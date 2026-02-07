@@ -1,4 +1,4 @@
-.\" Copyright (C) 2013-2023 Kevin Boone and others
+.\" Copyright (C) 2013-2026 Kevin Boone and others
 .\" Permission is granted to any individual or institution to use, copy, or
 .\" redistribute this software so long as all of the original files are
 .\" included, and that this copyright notice
@@ -18,30 +18,32 @@ uconv \- a general-purpose unit converter
 .SH DESCRIPTION
 \fIuconv\fR is 
 a general-purpose unit converter for use on the 
-command line. There are many (perhaps too many) unit converter programs available; 
-most have graphical interfaces. \fIuconv\fR is intended to be sufficiently
-flexible in its unit specification that it is faster and easier to
-use on the command line than a graphical program. 
-\fIuconv\fR is primarily intended for domestic and general scientific use --
-it doesn't include the large numbers of specialized units that are used in
-particular disciplines.  
+command line. There are many (perhaps too many) unit converter programs, but 
+most have graphical interfaces. \fIuconv\fR is sufficiently
+flexible in its unit specification that it should be faster and easier to
+use on the command line than a graphical program. However, to use  \fIuconv\fR 
+effectively, you do need to be familiar with the way it parses unit names.
 
-\fIuconv\fR recognizes a hundred or so basic units, and these can be used
-in combination to form compound units (metres/second, newton.metres, etc.) 
+\fIuconv\fR is primarily intended for domestic and general scientific use --
+it doesn't include the large numbers of specialized units that 
+particular disciplines employ.  
+
+\fIuconv\fR recognizes a hundred or so basic units. These can be used
+in combination to form compound units ('metres/second', 'newton.metres', etc). 
 In fact, \fIuconv\fR will convert between any pair of units that are
-dimensionally consistent. For example, you can convert joules per second per
-kilogram to calories per minute per pound, if you wish. The program won't
-attempt to convert, for example, minutes to metres -- these are not
+dimensionally consistent. For example, you can convert 'joules per second per
+kilogram' to 'calories per minute per pound', if you wish. The program won't
+attempt to convert, for example, minutes to metres: these units are not
 dimensionally consistent. 
 
-Units that are complementary to one another are assumed to be dimensionally
+Units that are reciprocal to one another are assumed to be dimensionally
 consistent, and \fIuconv\fR will invert the result according. So, for example,
-it can convert miles/gallon to litres/km, even though these units are
-complementary, rather than equivalent. 
+it can convert 'miles/gallon' to 'litres/km', even though these units are
+reciprocal, rather than equivalent. 
 
-Although the examples in this manual are shown using 3 arguments -- one for the
-number, one for its units and the destination units -- the units can also be
-specified in the same argument as the coefficient.
+Although the examples in this manual are mostly shown using 3 arguments -- one for the
+source number, one for its units, and one for the target units -- the source units can also be
+specified in the same argument as number.
 
 .SH OVERVIEW OF OPERATION
 
@@ -69,7 +71,7 @@ And the equivalent two-argument form:
 uconv 6ft cm
 .fi
 
-Fractional values are also accepted:
+\fIuconv\fR also accepts fractional values:
 
 .nf
 uconv 1/32in mm
@@ -77,11 +79,11 @@ uconv "7 1/2mi" km
 uconv "-20 1/2" f c
 .fi
 
-When using mixed fractions in the form of "a b/c" or "-a b/c", neither the
+When using mixed fractions in the form of 'a b/c' or '-a b/c', neither the
 numerator nor the denominator can be negative, and the numerator must be less
 than the denominator.
 
-However, because \fIuconv\fR recognizes a large number of synonyms for 
+Because \fIuconv\fR recognizes a large number of synonyms for 
 unit names, the following all produce the same result:
 
 .nf
@@ -90,15 +92,15 @@ uconv 6 feet centimetres
 uconv 6 ft centimeter
 .fi
 
-Units can be compounded, provided that they can be reduced to the same
+Units can be compounded, provided they can be reduced to the same
 base units. For example, to convert 60 miles per hour to metres per second:
-
 
 .nf
 uconv 60 miles/hour m/sec
 .fi
 
-Again, the following all produce the same result:
+The following are alternative ways to write the same conversion, and
+all produce the same result:
 
 .nf
 uconv 60 mph metre/sec
@@ -120,11 +122,12 @@ m2
 The quotes around the last example are necessary to prevent the shell
 recognizing the space as an argument separator.
 
-There are two units representing degrees in uconv: 'degrees' and 'dms'. These
-are internally equivalent, but when using 'dms' as the conversion destination
-unit, the output will be displayed as degrees with the fractional part
-subdivided into arc minutes and arc seconds whereas 'degrees' is entirely
-decimal. Using '-d' with 'dms' is the same as using 'degrees':
+There are two units representing angular degrees in uconv: 'degrees' and 'dms'. These
+are internally equivalent but, when using 'dms' as the conversion target,
+\fIuconv\fR displays the output with the fractional part
+subdivided into arc minutes and arc seconds. 'degrees', however, always
+produces a decimal result. 
+Using '-d' with 'dms' is the same as using 'degrees':
 
 .nf
 $ uconv 1.7 radians degrees
@@ -137,7 +140,7 @@ $ uconv -d 1.7 radians dms
 
 .SH UNIT FORMAT
 
-A unit is made from one or more unit elements separated by '.' or '/'; for
+A unit is made up of one or more unit elements separated by '.' or '/'. For
 example:
 
 .nf
@@ -149,7 +152,7 @@ In books it's quite common to see newton-metres written 'nM'; \fIuconv\fR does
 not recognize this notation, because it makes it too easy to confuse
 single units with collections of units. For example, is 'msec' metre.seconds or
 milliseconds? Because of this ambiguity, \fIuconv\fR insists on a separator
-between unit elements. 
+between unit elements: 'n.M' or 'newton.metres'.
 
 
 The general format of a unit element is:
@@ -171,7 +174,7 @@ cm3
 cm^-3
 .fi
 
-Similarly, the second power can be represented with '^2' or '2' after the name,
+Similarly, the second power can be represented as '^2' or '2' after the unit name,
 or 'square' or 'sq' before it. Higher powers can be entered using numbers, but
 there are no names for these.
 
@@ -184,7 +187,7 @@ kilo(k), deci(d), centi(c), milli(m), micro(u), nano(n), pico(p).
 (gibibytes, mebibytes). These prefixes represent power-of-two
 multipliers, rather than the power-of-ten multipliers used for all
 other units. IEC prefixes are only allowed for units involving data
-capacity - there is no 'gibigram', for example. Where IEC units
+capacity: there is no 'gibigram', for example. Where IEC units
 might be used, they are used by default, unless the \fI-s\fR switch
 is given. 
 
@@ -193,13 +196,12 @@ An exception is 'mb' for 'megabyte' -- see below for more on this point.
 
 .SS Names
 
-All units can be entered with a variety of names and abbreviations. In general,  
+\fIuconv\fR accepts units with a variety of names and abbreviations. In general,  
 \fIuconv\fR's name match is case insensitive even where the conventional name 
-is upper-case or mixed case (e.g., mmHg for millimetres of mercury). This is
-simply to reduce the number of keypresses needed to get to the result.
+is upper-case or mixed case (e.g., mmHg for millimetres of mercury). 
 
 Plural forms (feet, rather than feet) are always recognized even when
-it would be grammatically dubious ('1 feet', '2 foot').
+they are grammatically questionable ('1 feet', '2 foot').
 
 Some unit names have spaces (e.g., nautical miles, troy ounces). \fIuconv\fR 
 provides
@@ -225,7 +227,7 @@ $ uconv 1000 l gal
 
 This behaviour is used for tons/hundredweight/stones/pounds/ounces, 
 hours/minutes/seconds, and gallons/pints/fluid-ounces. To override
-this formatting style and use only decimal formatting, use the \fI-f\fR
+this formatting style and use only decimal formatting, use the \fI-d\fR
 switch:
 
 .nf
@@ -234,10 +236,10 @@ $ uconv -d 1000 l gal
 .fi
 
 The output includes the input units, but with full names rather than any 
-abbreviations that might have been used. This is necessary because, with
+abbreviations you might have used. This is necessary because, with
 such a large number of units available, it's very easy to use the wrong
 abbreviation (entering 'C' for coulomb, when \fIuconv\fR interprets it 
-as Celsius, for example.) Check that the units in the output are what
+as Celsius, for example). You should always check that the units in the output are what
 you expect, and refer to the list of units if necessary.
 
 
@@ -253,10 +255,11 @@ to make this distinction, because otherwise it's difficult to ensure
 that consistent units are being converted. The distinction is not
 always noticeable: plain 'weights' in 
 kilograms and stones can be freely converted -- you're actually converting
-masses, but the conversion factors are the same. What you can't do is
-convert, for example, torque in newton-metres to pound-feet,
+masses, but the conversion factors are the same, so you get the correct
+result. What you can't do is
+convert, for example, torque in newton-metres to pounds-feet,
 because a pound is a mass, not a force. 
-The assocated unit of force is pound-force-feet.
+The associated unit of torque is pound-force-feet.
 Consequently, we can't do this:
 
 .nf
@@ -269,13 +272,16 @@ But we can do this:
 uconv 1 lbf.foot N.m
 .fi
 
-Because 'lbf' is the abbreviation for pounds-force.
+Because 'lbf' is the abbreviation for pounds-force. This is an annoyance, because 
+we rarely use the suffix '-force' outside of physics textbooks. But 
+allowing \fIuconv\fR to be flexible here would potentially cause other problems
+in parsing.
 
 If an argument to \fIuconv\fR will match a unit name alone, or a unit with a prefix,
-then the unit name is preferred. So, for example, 'min' is 
+then it prefers the unit name alone. So, for example, 'min' is 
 interpreted as 'minute', and not 'milli-inch'. This is usually the right
 thing to do. If \fIuconv\fR matches wrongly in this respect, give the
-prefix name in full ('milliinch').
+prefix in full ('milliinch').
 
 Sometimes the same name is used for different units. There isn't much that
 \fIuconv\fR can do about this. For example, the unit 'cord' is used as a unit
@@ -286,8 +292,8 @@ way to get around this problem other than providing different name or abbreviati
 variants in
 the program. Refer to the list of unit names to see which is appropriate.
 
-\fIuconv\fR favours English/international units over
-US variants. For example, a US pint is slightly smaller than a UK pint
+Where there is a regional variation, \fIuconv\fR favours English units over
+US. For example, a US pint is slightly smaller than a UK pint
 (but there are still eight pints to the gallon in both regions). \fIuconv\fR
 uses the prefix 'us' to indicate US variants, e.g., 'uspint', 'usgallon', 'uston'. 
 
@@ -297,15 +303,22 @@ none of the other prefixes (mega, centi, etc) are interpreted in this
 loose way. 'kilo' is handled differently because its use as a measure of
 mass is so common.
 
+The output of \fIuconv -l\fR doesn't show prefixed units, even when they are
+very common. So, while you can use 'km' as a unit of length, it doesn't show
+up in the unit list. The reason for this is that there are so many units that
+including each one with all possible prefixes would make the unit list unreadably.
+long.
+
 .SH NOTES ON SPECIFIC UNITS
 
 \fIuconv\fR uses the name 'calorie' (or 'cal') in the scientific sense:
 the amount of energy that will raise the temperature of
-one gramme of water by one degree Celsius. The 'calorie' that is used
+one gramme of water by one degree Celsius. The 'calorie' used
 in food labels and diet books is typically a thousand times 
 bigger than this -- strictly
-it's a kilocalorie. Food labelling is getting better in the UK, but it's still
-quite common to use the term 'calorie' to mean a kilocalorie. 
+it's a kilocalorie. Food labelling is getting better in the UK, but vendors still
+often use the term 'calorie' to mean a kilocalorie. You can 
+use 'kcal' to denote the food-related use of the calorie. 
 
 The units of radiation dose -- gray, rad, sievert, and REM -- can be
 freely -- and possibly wrongly -- converted using 
@@ -314,7 +327,7 @@ However, in practice they are not convertible, except where the radiation
 is photonic. This is an issue of physics, not mathematics.
 
 Radians cannot be abbreviated to 'rad' or 'rads', as these names are
-used by the unit of radiation dose, the rad.
+used by the unit of radiation dose, the rad. You need to write 'radians'.
 
 The steradian is a dimensionless unit of solid angle, which cannot be 
 converted to anything else. It exists in \fIuconv\fR solely to prevent units
@@ -323,7 +336,7 @@ in terms of luminous intensity, while illuminance is defined in terms of
 luminious flux. These units are generally not convertible.
 
 The units 'footcandle' and 'footlambert' are common, but misleading, names
-for lumens/sq foot and candela/sq foot respectively. These units cannot
+for 'lumens/sq foot  and  candela/sq foot  respectively. These units cannot
 be entered as 'foot.candela' or 'foot.lambert' -- these are valid, but completely
 different -- units.
 
@@ -336,10 +349,11 @@ The unit 'mpg', which is a shortcut for 'miles/gallon' refers to the UK
 (imperial) gallon. For US gallons, use 'miles/usgallon'.
  
 The units for digital storage and transmission have explicit definitions for
-the various prefixes so they can be entered in lowercase which violates SI
+the various prefixes so they can be entered in lower-case even though this
+usage violates SI
 conventions. For example, "1 mbyte" will be interpreted as "1 megabyte" rather
-than "1 millibite". This usage is allowed because it is so common, and
-it's should cause problems in practice.
+than "1 millibite". This usage is allowed because it's so common, and
+shouldn't cause problems in practice.
 
 .SH "OPTIONS"
 .TP
@@ -348,14 +362,15 @@ Show brief usage information
 .LP
 .TP
 .BI -l
-Print a list of known unit names and synonyms
+Print a list of unit names and synonyms
 .LP
 .TP
 .BI -s
 Use powers of 10 (SI) instead of 2 (IEC) for bytes and bits. Normally something
-like "1 kb" would be interpreted as 1024 bytes instead of 1000. If the input
-contains a mixture of SI prefixes and IEC prefixes (e.g. "20 mb mib"), it is
-presumed the user wishes to convert between SI and IEC units.
+like "1 kb" would be interpreted as 1024 bytes instead of 1000 bytes. If the input
+contains a mixture of SI prefixes and IEC prefixes (e.g. "20 mb mib"), \fIuconv\fR presumes
+that you 
+want to convert between SI and IEC units.
 .LP
 .TP
 .BI -v
@@ -393,11 +408,11 @@ $ ./uconv 104 kilos st
 
 .SH BUGS AND LIMITATIONS
 
-\fIuconv\fR is strongly biased to US/UK usage, and particularly UK. It recognizes
-and displays only English names, and would not be easy to extend to other
-languages.
+\fIuconv\fR is strongly biased to US and UK unit names, and particularly to the
+UK.  It recognizes and displays only English, and would not be easy to extend
+to other languages.
 
-Although \fIuconv\fR can output imperial measures in not-decimal sets
+Although \fIuconv\fR can output imperial measures in non-decimal form 
 (pounds and ounces, etc), it cannot read data in this format. Input
 values have to be decimal.
 
@@ -409,14 +424,16 @@ if the result is 1.0000001 feet, it will likely be displayed as
 tricky to fix without re-implementing the entire math library to work
 in decimal.
 
-Some relatively common units (e.g., barrels) are not included because 
+Some relatively common units (e.g., 'barrels') are not included because 
 there are too many
 variants to be sure of getting the right value.
 
-On the whole, \fIuconv\fR includes units only if they are in current use, and
-avoids those of mostly historical significance (chain, ell, league). These units
-could easily be included, but doing so increases the risk of the user entering
-a partial name or abbreviation that matches something completely unexpected. 
+On the whole, \fIuconv\fR includes units in its database only if they are in
+current use, and avoids those of only historical significance ('chain', 'ell',
+ 'league'). These units could easily be included, but doing so increases the risk
+of the user entering a partial name or abbreviation that matches something
+completely unexpected. In general, the more units in the database, the more
+likely such inadvertent misreadings becomes.
 
 \fIuconv\fR does not recognize 'per' as a compound unit separator. That is,
 you can say 'km/hr', but not 'km per hour'.  
