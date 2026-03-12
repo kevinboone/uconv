@@ -1,6 +1,6 @@
 <h1>uconv -- a general unit converter for the command line</h1> 
 
-Version 0.0.5, January 2026 
+Version 0.0.6, January 2026 
 
 <h2>What is this?</h2>
 
@@ -115,6 +115,12 @@ under the terms of the GNU Public Licence, version 3.0. There is no
 warranty of any kind.
 
 <h2>Updates</h2>
+
+<p>
+0.0.6, January 2026
+<br/>
+Added multi-value conversion, contributed by @ericpruitt. 
+</p>
 
 <p>
 0.0.5, January 2026
