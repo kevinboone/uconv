@@ -12,6 +12,9 @@
 #include <errno.h>
 #include "units.h" 
 
+static BOOL default_to_iec = TRUE;
+static BOOL force_decimal = FALSE;
+
 typedef enum {
   no_prefix,
   iec_prefix,
@@ -42,6 +45,7 @@ void show_usage (const char *argv0, FILE *out)
   fprintf (out, "  -d                Force decimal output\n");
   fprintf (out, "  -h                Show this message\n");
   fprintf (out, "  -l                List available units\n");
+  fprintf (out, "  -m                Accept multiple input values\n");
   fprintf (out, "  -s                Use powers of 10 instead of 2 for bytes and bits\n");
   fprintf (out, "  -v                Show version\n");
   }
@@ -161,6 +165,94 @@ double fractod (char *text, char **endptr)
   return result;
   }
 
+int convert_argument (char *from, char *from_units_suffix, char *to)
+  {
+  static char* previous_from_units_suffix = NULL;
+
+  double value;
+  char *error = NULL, *invalid = NULL;
+  errno = 0;
+  Units *fu = NULL, *tu = NULL;
+
+  if (from_units_suffix)
+    {
+    value = fractod (from, &invalid);
+    // If fractod parsed the entire string, ensure "invalid" is set to NULL.
+    if (errno == 0 && invalid && *invalid == '\0') invalid = NULL;
+    }
+  else
+    {
+    value = fractod (from, &from_units_suffix);
+    if (errno != 0 || from == from_units_suffix)
+      {
+      invalid = from;
+      if (from != from_units_suffix) *from = '\0'; // Don't include units in error.
+      }
+    else if (*from_units_suffix == '\0')
+      {
+      if (!previous_from_units_suffix)
+        {
+        fprintf (stderr, "No units specified for input value '%s'\n", from);
+        return 1;
+        }
+
+      from_units_suffix = previous_from_units_suffix;
+      }
+    }
+
+  previous_from_units_suffix = from_units_suffix;
+
+  if (invalid)
+    {
+    fprintf (stderr, "%s: %s\n", invalid, errno == 0 ? "Not a valid number" : strerror(errno));
+    return 1;
+    }
+
+  fu = units_parse (from_units_suffix, &error);
+  if (!fu) goto done;
+
+  tu = units_parse (to, &error);
+  if (!tu) goto done;
+
+  // When defaulting to IEC units, only convert to IEC units if all
+  // inputs are SI units. This allows conversion of SI to IEC by mixing
+  // unit types e.g. "10 gb gib".
+  if (default_to_iec)
+    {
+    int i, counts[digital_storage_prefix_enum_count] = {0};
+
+    for (i = 0; i < fu->n_elements; i++)
+      counts[data_unit_type (fu->units[i].unit)]++;
+
+    for (i = 0; i < tu->n_elements; i++)
+      counts[data_unit_type (tu->units[i].unit)]++;
+
+    if (counts[si_prefix] && !counts[iec_prefix])
+      {
+      for (i = 0; i < fu->n_elements; i++)
+        fu->units[i].unit = si_to_iec (fu->units[i].unit);
+
+      for (i = 0; i < tu->n_elements; i++)
+        tu->units[i].unit = si_to_iec (tu->units[i].unit);
+      }
+    }
+
+  double res = units_convert (value, fu, tu, &error);
+  if (!error)
+    {
+    char *fs = units_format_string_and_value (fu, value, force_decimal);
+    char *ts = units_format_string_and_value (tu, res, force_decimal);
+    printf ("%s = %s\n", fs, ts);
+    }
+
+done:
+  if (error) fprintf (stderr, "Error: %s\n", error);
+
+  free(fu);
+  free(tu);
+  free(error);
+  return error ? 1 : 0;
+  }
 
 /*============================================================================
   main
@@ -171,8 +263,7 @@ int main (int argc, char **argv)
   BOOL usage = FALSE;
   BOOL list = FALSE;
   BOOL version = FALSE;
-  BOOL force_decimal = FALSE;
-  BOOL default_to_iec = TRUE;
+  BOOL multiple_inputs = FALSE;
 
   // We have to parse the arguments manually, because the first argument
   //  might be a negative number
@@ -201,6 +292,9 @@ int main (int argc, char **argv)
                 break;
               case 'l':
                 list =TRUE;
+                break;
+              case 'm':
+                multiple_inputs =TRUE;
                 break;
               case 'h':
                 usage =TRUE;
@@ -233,107 +327,33 @@ int main (int argc, char **argv)
     exit(0);
     }
 
-  char *from, *to, *invalid = NULL;
-  double n;
-
-  switch (argc - optind) {
-    case 2:
-      to = argv[optind + 1];
-      errno = 0;
-      n = fractod (argv[optind], &from);
-      if (errno != 0 || from == argv[optind])
-        {
-        invalid = argv[optind];
-        if (from != argv[optind]) *from = '\0'; // Don't include units in error.
-        }
-      else if (*from == '\0')
-        {
-        fprintf (stderr, "%s: Missing destination units\n", argv[0]);
+  if (!multiple_inputs)
+    {
+    switch (argc - optind)
+      {
+      case 2:
+        return convert_argument(argv[optind], NULL, argv[optind + 1]);
+      case 3:
+        return convert_argument(argv[optind], argv[optind + 1], argv[optind + 2]);
+      default:
+        fprintf (stderr, "%s: Wrong number of arguments; expected 2 or 3\n",
+          argv[0]);
+        show_usage (argv[0], stderr);
         return 1;
-        }
-      break;
-    case 3:
-      from = argv[optind + 1];
-      to = argv[optind + 2];
-      errno = 0;
-      n = fractod (argv[optind], &invalid);
-      // If fractod parsed the entire string, ensure "invalid" is set to NULL.
-      if (errno == 0 && invalid && *invalid == '\0') invalid = NULL;
-      break;
-    default:
-      fprintf (stderr, "%s: Wrong number of arguments; expected 2 or 3\n",
-        argv[0]);
-      show_usage (argv[0], stderr);
-      return 1;
-  }
-
-  if (invalid)
-    {
-    fprintf (stderr, "%s: %s\n", invalid,
-      errno == 0 ? "Not a valid number" : strerror(errno));
-    return 1;
+      }
     }
-
-  char *error = NULL;
-  Units *fu = units_parse (from, &error);
-  if (fu)
+  else if ((argc - optind) < 2)
     {
-    Units *tu = units_parse (to, &error);
-    if (tu)
-      {
-      // When defaulting to IEC units, only convert to IEC units if all
-      // inputs are SI units. This allows conversion of SI to IEC by mixing
-      // unit types e.g. "10 gb gib".
-      if (default_to_iec)
-        {
-        int counts[digital_storage_prefix_enum_count] = {0};
-
-        for (i = 0; i < fu->n_elements; i++)
-          counts[data_unit_type (fu->units[i].unit)]++;
-
-        for (i = 0; i < tu->n_elements; i++)
-          counts[data_unit_type (tu->units[i].unit)]++;
-
-        if (counts[si_prefix] && !counts[iec_prefix])
-          {
-          for (i = 0; i < fu->n_elements; i++)
-            fu->units[i].unit = si_to_iec (fu->units[i].unit);
-
-          for (i = 0; i < tu->n_elements; i++)
-            tu->units[i].unit = si_to_iec (tu->units[i].unit);
-          }
-        }
-
-      double res = units_convert (n, fu, tu, &error);
-      if (!error)
-        {
-        char *fs = units_format_string_and_value (fu, n, force_decimal);
-        char *ts = units_format_string_and_value (tu, res, force_decimal);
-        printf ("%s = %s\n", fs, ts);
-        free (fs);
-        free (ts);
-        return 0;
-        }
-      else
-        {
-        fprintf (stderr, "Error: %s\n", error);
-        free (error);
-        }
-      units_free (tu);
-      }
-    else
-      {
-      fprintf (stderr, "Error: %s\n", error);
-      free (error);
-      }
-
-    units_free (fu);
+    fprintf (stderr, "%s: Wrong number of arguments for use with -m; expected at least 2\n", argv[0]);
+    return 1;
     }
   else
     {
-    fprintf (stderr, "Error: %s\n", error);
-    free (error);
-    }
+    int status = 0;
 
-  return 1;
+    for (int i = 0; i < argc - optind - 1; i++)
+      status |= convert_argument(argv[optind + i], NULL, argv[argc - 1]);
+
+    return status;
+    }
   }

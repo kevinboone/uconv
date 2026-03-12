@@ -15,6 +15,10 @@ uconv \- a general-purpose unit converter
 .RB [options]\ {value}\ {from_units}\ {to_units} 
 .PP
 
+.B uconv
+.RB [options]\ -m\ {value}{from_units}...\ {to_units}
+.PP
+
 .SH DESCRIPTION
 \fIuconv\fR is 
 a general-purpose unit converter for use on the 
@@ -136,6 +140,26 @@ $ uconv 1.7 radians dms
 1.7 radians = 97 degrees, 24 arc minutes, 10.1706 arc seconds
 $ uconv -d 1.7 radians dms
 1.7 radians = 97.4028 degrees
+.fi
+
+Multiple inputs can be specified with the '-m' option:
+
+.nf
+$ uconv -m 1ft 5yards m
+1 foot = 0.3048 metres
+5 yards = 4.572 metres
+.fi
+
+When specifying the units for the inputs, they must always be concatenated with
+the value. When units are omitted, the last explicitly specified units are used
+for the following values:
+
+.nf
+$ uconv -m 1ft 2 30cm 150 m
+1 foot = 0.3048 metres
+2 feet = 0.6096 metres
+30 centimetres = 0.3 metres
+150 centimetres = 1.5 metres
 .fi
 
 .SH UNIT FORMAT
@@ -403,6 +427,11 @@ $ uconv 3705 sec hr
 
 $ ./uconv 104 kilos st
 104 kilos = 16 stones, 5 pounds, 4.49204 ounces
+
+$ uconv -m 5lbs 2 16oz kg
+5 pounds = 2.26796 kilogrammes
+2 pounds = 0.907185 kilogrammes
+16 ounces = 0.453592 kilogrammes
 .fi 
 
 
