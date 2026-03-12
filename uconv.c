@@ -165,7 +165,15 @@ double fractod (char *text, char **endptr)
   return result;
   }
 
-int convert_argument (char *from, char *from_units_suffix, char *to)
+
+/*============================================================================
+  convert
+  Perform a conversion of one unit to another. If the value and units are
+  separate strings, they are passed in as "from" and "from_units_suffix",
+  respectively. If they are concatenated, "from" should point to the whole
+  string while "from_units_suffix" should be set to NULL.
+============================================================================*/
+int convert (char *from, char *from_units_suffix, char *to)
   {
   static char* previous_from_units_suffix = NULL;
 
@@ -196,6 +204,8 @@ int convert_argument (char *from, char *from_units_suffix, char *to)
         return 1;
         }
 
+      // If the "from" value does not include units but a previous call did, we
+      // reuse the units from the previous call.
       from_units_suffix = previous_from_units_suffix;
       }
     }
@@ -332,9 +342,9 @@ int main (int argc, char **argv)
     switch (argc - optind)
       {
       case 2:
-        return convert_argument(argv[optind], NULL, argv[optind + 1]);
+        return convert(argv[optind], NULL, argv[optind + 1]);
       case 3:
-        return convert_argument(argv[optind], argv[optind + 1], argv[optind + 2]);
+        return convert(argv[optind], argv[optind + 1], argv[optind + 2]);
       default:
         fprintf (stderr, "%s: Wrong number of arguments; expected 2 or 3\n",
           argv[0]);
@@ -352,7 +362,7 @@ int main (int argc, char **argv)
     int status = 0;
 
     for (int i = 0; i < argc - optind - 1; i++)
-      status |= convert_argument(argv[optind + i], NULL, argv[argc - 1]);
+      status |= convert(argv[optind + i], NULL, argv[argc - 1]);
 
     return status;
     }
