@@ -210,8 +210,6 @@ int convert (char *from, char *from_units_suffix, char *to)
       }
     }
 
-  previous_from_units_suffix = from_units_suffix;
-
   if (invalid)
     {
     fprintf (stderr, "%s: %s\n", invalid, errno == 0 ? "Not a valid number" : strerror(errno));
@@ -250,6 +248,7 @@ int convert (char *from, char *from_units_suffix, char *to)
   double res = units_convert (value, fu, tu, &error);
   if (!error)
     {
+    previous_from_units_suffix = from_units_suffix;
     char *fs = units_format_string_and_value (fu, value, force_decimal);
     char *ts = units_format_string_and_value (tu, res, force_decimal);
     printf ("%s = %s\n", fs, ts);
