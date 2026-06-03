@@ -115,6 +115,34 @@ int si_to_iec (Unit u)
     }
   }
 
+/*============================================================================
+  has_explicit_si_data_unit
+  Detect whether an SI data unit is spelled out in full.
+============================================================================*/
+BOOL has_explicit_si_data_unit (char *units)
+  {
+  char *prefixes[] = {
+    "kilob", "megab", "gigab", "terab", "petab", "exab", NULL,
+  };
+
+  for (char **cursor = prefixes; *cursor; cursor++)
+    {
+    size_t prefix_length = strlen(*cursor);
+    char *match = strcasestr(units, *cursor);
+
+    if (match)
+      {
+      char next_char = tolower((int) *(match + prefix_length));
+
+      // We're abusing the fact that data units are the only ones that start
+      // with a "b" and are followed by a "y" or "i".
+      if (next_char == '\0' || strchr("yi./", next_char))
+        return TRUE;
+      }
+    }
+
+  return FALSE;
+  }
 
 /*============================================================================
   fractod
@@ -222,18 +250,27 @@ int convert (char *from, char *from_units_suffix, char *to)
   tu = units_parse (to, &error);
   if (!tu) goto done;
 
-  // When defaulting to IEC units, only convert to IEC units if all
-  // inputs are SI units. This allows conversion of SI to IEC by mixing
-  // unit types e.g. "10 gb gib".
+  // When defaulting to IEC units, only convert to IEC units if all inputs are
+  // abbreviated SI units. This allows conversion of SI to IEC by mixing unit
+  // types e.g. "10 gb gib". The logic for determining if a prefix is spelled
+  // out is triggered by any prefix in the string rather than associating it
+  // with the right unit. Specify multiple data units is an unusual case, so
+  // this shouldn't be a problem in practice.
   if (default_to_iec)
     {
     int i, counts[digital_storage_prefix_enum_count] = {0};
 
     for (i = 0; i < fu->n_elements; i++)
-      counts[data_unit_type (fu->units[i].unit)]++;
+      {
+      int type = data_unit_type (fu->units[i].unit);
+      if (type != si_prefix || !has_explicit_si_data_unit(from_units_suffix)) counts[type]++;
+      }
 
     for (i = 0; i < tu->n_elements; i++)
-      counts[data_unit_type (tu->units[i].unit)]++;
+      {
+      int type = data_unit_type (tu->units[i].unit);
+      if (type != si_prefix || !has_explicit_si_data_unit(to)) counts[type]++;
+      }
 
     if (counts[si_prefix] && !counts[iec_prefix])
       {

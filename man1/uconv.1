@@ -211,9 +211,9 @@ kilo(k), deci(d), centi(c), milli(m), micro(u), nano(n), pico(p).
 (gibibytes, mebibytes). These prefixes represent power-of-two
 multipliers, rather than the power-of-ten multipliers used for all
 other units. IEC prefixes are only allowed for units involving data
-capacity: there is no 'gibigram', for example. Where IEC units
-might be used, they are used by default, unless the \fI-s\fR switch
-is given. 
+capacity: there is no 'gibigram', for example. By default,
+abbreviations are treated as IEC units unless the \fI-s\fR switch is
+given or abbreviations are mixed e.g. "20 mb mib".
 
 Prefixes are case-sensitive, although units generally are not.
 An exception is 'mb' for 'megabyte' -- see below for more on this point.
