@@ -5,6 +5,8 @@
   Distributed under the terms of the GNU Public Licence, version 2
 ============================================================================*/
 
+// Must define _GNU_SOURCE for strcasestr() to work properly
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,6 +131,7 @@ BOOL has_explicit_si_data_unit (char *units)
     {
     size_t prefix_length = strlen(*cursor);
     char *match = strcasestr(units, *cursor);
+
 
     if (match)
       {
@@ -289,6 +292,10 @@ int convert (char *from, char *from_units_suffix, char *to)
     char *fs = units_format_string_and_value (fu, value, force_decimal);
     char *ts = units_format_string_and_value (tu, res, force_decimal);
     printf ("%s = %s\n", fs, ts);
+    // Oops -- not freeing these leads to a memory leak. How long
+    //   has this bug been here? :/
+    free (fs);
+    free (ts);
     }
 
 done:

@@ -1,5 +1,5 @@
 all: uconv
-VERSION = 0.0.6
+VERSION = 0.0.7
 NAME    ?= uconv
 APPNAME = $(NAME)
 PREFIX  := /usr
@@ -14,7 +14,8 @@ MYLDFLAGS=$(LDFLAGS)
 
 uconv: uconv.o units.o
 #	$(CC) -s -o uconv uconv.o units.o -lm
-	$(CC) $(MYLDFLAGS) -s -o uconv uconv.o units.o -lm
+#	$(CC) $(MYLDFLAGS) -s -o uconv uconv.o units.o -lm
+	$(CC) $(MYLDFLAGS) -o uconv uconv.o units.o -lm
 
 uconv.o: uconv.c units.h
 	$(CC) $(MYCFLAGS) -g -o uconv.o -c uconv.c
